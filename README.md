@@ -1,36 +1,78 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🤖 AI Interview Agent
 
-## Getting Started
+A comprehensive AI-powered interview practice platform built with Next.js, Firebase, and TypeScript. Practice technical interviews with AI-generated questions and receive detailed feedback on your performance.
 
-First, run the development server:
+## ✨ Features
+
+- 🔐 **Authentication** - Secure Firebase authentication with session management
+- 📝 **Interview Creation** - Dynamic interview generation based on role, level, and tech stack
+- 🎯 **Interactive Interview** - Voice and text-based interview experience
+- 🤖 **AI-Powered Feedback** - Detailed performance analysis and improvement suggestions
+- 📊 **Dashboard** - Track your interview history and progress
+- 🎨 **Modern UI** - Clean, responsive design with Tailwind CSS
+
+## 🚀 Tech Stack
+
+- **Frontend:** Next.js 15, TypeScript, Tailwind CSS
+- **Backend:** Next.js Server Actions, Firebase Admin SDK
+- **Database:** Firebase Firestore
+- **Authentication:** Firebase Auth
+- **UI Components:** Radix UI primitives
+- **Icons:** Lucide React
+- **Voice:** VAPI integration ready
+
+## 🛠 Installation & Setup
+
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/localghost09/interview-ai-agent.git
+   cd interview-ai-agent
+   ```
+
+2. **Install dependencies**
+   ```bash
+   npm install
+   ```
+
+3. **Set up Firebase**
+   - Create a Firebase project at [Firebase Console](https://console.firebase.google.com)
+   - Enable Firestore Database (start in test mode for development)
+   - Generate a service account key from Project Settings > Service Accounts
+
+4. **Environment Configuration**
+   
+   Create a `.env.local` file in the root directory:
+   ```env
+   FIREBASE_PROJECT_ID="your-project-id"
+   FIREBASE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\nyour-private-key-here\n-----END PRIVATE KEY-----\n"
+   FIREBASE_CLIENT_EMAIL="your-service-account-email@project.iam.gserviceaccount.com"
+   ```
+
+5. **Run the development server**
+   ```bash
+   npm run dev
+   ```
+
+   Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+
+## 🎯 Usage
+
+1. **Sign Up/Sign In** - Create an account or sign in with existing credentials
+2. **Create Interview** - Set up a new interview with your desired role and tech stack
+3. **Review Questions** - Preview the AI-generated questions before starting
+4. **Take Interview** - Answer questions using voice or text input
+5. **Get Feedback** - Receive detailed AI analysis and improvement suggestions
+
+## 🚀 Deployment
+
+Deploy easily on Vercel:
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npx vercel
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Don't forget to add your environment variables in the Vercel dashboard!
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+---
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Made with ❤️ by [localghost09](https://github.com/localghost09)

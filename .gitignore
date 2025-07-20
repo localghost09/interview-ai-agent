@@ -39,3 +39,12 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Firebase
+firebase-debug.log*
+firebase-debug.*.log*
+.firebase/
+
+# Firebase service account keys (NEVER commit these)
+*-firebase-adminsdk-*.json
+firebase-service-account.json

@@ -2,7 +2,7 @@ import React, { ReactNode } from 'react'
 import  Link from 'next/link'
 import Image from 'next/image'
 import WindowCloseHandler from '@/components/WindowCloseHandler'
-import LogoutButton from '@/components/LogoutButton'
+import LogoutButton from '../../components/LogoutButton'
 
 const RootLayout = ({children}: {children:ReactNode}) => {
   return (

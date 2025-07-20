@@ -24,24 +24,28 @@ A comprehensive AI-powered interview practice platform built with Next.js, Fireb
 ## 🛠 Installation & Setup
 
 1. **Clone the repository**
+
    ```bash
    git clone https://github.com/localghost09/interview-ai-agent.git
    cd interview-ai-agent
    ```
 
 2. **Install dependencies**
+
    ```bash
    npm install
    ```
 
 3. **Set up Firebase**
+
    - Create a Firebase project at [Firebase Console](https://console.firebase.google.com)
    - Enable Firestore Database (start in test mode for development)
    - Generate a service account key from Project Settings > Service Accounts
 
 4. **Environment Configuration**
-   
+
    Create a `.env.local` file in the root directory:
+
    ```env
    FIREBASE_PROJECT_ID="your-project-id"
    FIREBASE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\nyour-private-key-here\n-----END PRIVATE KEY-----\n"
@@ -49,6 +53,7 @@ A comprehensive AI-powered interview practice platform built with Next.js, Fireb
    ```
 
 5. **Run the development server**
+
    ```bash
    npm run dev
    ```

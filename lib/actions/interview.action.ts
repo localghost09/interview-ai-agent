@@ -14,7 +14,7 @@ export async function createInterview(params: {
 
   try {
     // Generate interview questions based on role, level, and tech stack
-    const questions = await generateQuestions(role, level, techstack, type);
+    const questions = await generateQuestions(role, level, techstack);
     
     const interviewData = {
       userId,

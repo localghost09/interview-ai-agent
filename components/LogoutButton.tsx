@@ -21,7 +21,7 @@ export default function LogoutButton() {
       } else {
         toast.error(result.message);
       }
-    } catch (error) {
+    } catch {
       toast.error('Failed to logout');
     } finally {
       setIsLoading(false);

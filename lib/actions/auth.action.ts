@@ -27,10 +27,11 @@ export  async function signUp(params:SignUpParams) {
             message : "Account created successfully . Please sign in."
         }
 
-    }catch(e:any){
+    }catch(e: unknown){
         console.error('Error creating a user',e);
         
-        if(e.code === 'auth/email-already-exist'){
+        const error = e as { code?: string };
+        if(error.code === 'auth/email-already-exist'){
             return{
                 success : false,
                 message : 'This email is already in use'

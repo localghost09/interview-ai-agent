@@ -1,6 +1,3 @@
-import { Button } from "@/components/ui/button";
-import { createInterview } from "@/lib/actions/interview.action";
-import { redirect } from "next/navigation";
 import InterviewForm from "@/components/InterviewForm";
 import { requireAuth } from "@/lib/auth";
 

@@ -6,7 +6,7 @@ import  DisplayTechIcons from  './DisplayTechIcons';
 import { Button } from './ui/button';
 import Link from 'next/link';
 
-const InterviewCard = ({interviewId, userId,role,type,techstack,createdAt}: InterviewCardProps) => {
+const InterviewCard = ({interviewId, role,type,techstack,createdAt}: InterviewCardProps) => {
     const feedback = null as Feedback | null;
     const normalixedType = /mix/gi.test(type) ? 'Mixed' :type;
     const formattedDate = dayjs(feedback?.createdAt || createdAt || Date.now()).format('DD/MM/YYYY');

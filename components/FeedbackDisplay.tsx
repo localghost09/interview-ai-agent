@@ -2,7 +2,6 @@
 
 import { Button } from "./ui/button";
 import { useRouter } from "next/navigation";
-import Image from "next/image";
 import dayjs from "dayjs";
 import DisplayTechIcons from "./DisplayTechIcons";
 

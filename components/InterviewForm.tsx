@@ -78,7 +78,7 @@ const InterviewForm = () => {
       } else {
         toast.error(result.message);
       }
-    } catch (error) {
+    } catch {
       toast.error("Failed to create interview");
     } finally {
       setLoading(false);

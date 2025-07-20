@@ -4,9 +4,9 @@ import InterviewInterface from "@/components/InterviewInterface";
 import { requireAuth } from "@/lib/auth";
 
 interface Props {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 }
 
 const InterviewStartPage = async ({ params }: Props) => {

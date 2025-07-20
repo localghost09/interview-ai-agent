@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "./ui/button";
 import { finalizeInterview } from "@/lib/actions/interview.action";
@@ -11,17 +11,9 @@ interface Props {
   interview: Interview;
 }
 
-interface InterviewResponse {
-  questionIndex: number;
-  question: string;
-  response: string;
-  timestamp: string;
-}
-
 const InterviewInterface = ({ interview }: Props) => {
   const router = useRouter();
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-  const [responses, setResponses] = useState<InterviewResponse[]>([]);
   const [currentResponse, setCurrentResponse] = useState("");
   const [isRecording, setIsRecording] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -40,15 +32,7 @@ const InterviewInterface = ({ interview }: Props) => {
       return;
     }
 
-    // Save current response
-    const newResponse: InterviewResponse = {
-      questionIndex: currentQuestionIndex,
-      question: currentQuestion,
-      response: currentResponse,
-      timestamp: new Date().toISOString()
-    };
-
-    setResponses(prev => [...prev, newResponse]);
+    // Clear current response and move to next question
     setCurrentResponse("");
 
     if (isLastQuestion) {
@@ -61,16 +45,6 @@ const InterviewInterface = ({ interview }: Props) => {
   const handleCompleteInterview = async () => {
     setIsLoading(true);
     try {
-      // Save final response if exists
-      const finalResponse: InterviewResponse = {
-        questionIndex: currentQuestionIndex,
-        question: currentQuestion,
-        response: currentResponse,
-        timestamp: new Date().toISOString()
-      };
-
-      const allResponses = [...responses, finalResponse];
-      
       // Here you would typically:
       // 1. Save responses to database
       // 2. Generate AI feedback
@@ -80,7 +54,7 @@ const InterviewInterface = ({ interview }: Props) => {
       
       toast.success("Interview completed successfully!");
       router.push(`/interview/${interview.id}/feedback`);
-    } catch (error) {
+    } catch {
       toast.error("Failed to complete interview");
     } finally {
       setIsLoading(false);

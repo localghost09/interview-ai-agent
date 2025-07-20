@@ -5,9 +5,9 @@ import FeedbackDisplay from "@/components/FeedbackDisplay";
 import { requireAuth } from "@/lib/auth";
 
 interface Props {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 }
 
 const FeedbackPage = async ({ params }: Props) => {
@@ -26,9 +26,9 @@ const FeedbackPage = async ({ params }: Props) => {
   if (!feedbackResult.success) {
     return (
       <div className="container mx-auto px-4 py-8 text-center">
-        <h1 className="text-2xl font-bold mb-4">Feedback Not Available</h1>
+                  <h2 className="text-2xl font-bold mb-4">Thanks for completing the interview!</h2>
         <p className="text-gray-600 mb-6">
-          Feedback for this interview hasn't been generated yet.
+          Feedback for this interview has not been generated yet.
         </p>
         {/* Here you could add a button to generate feedback */}
       </div>

@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "./ui/button";
-import { finalizeInterview } from "@/lib/actions/interview.action";
 import { toast } from "sonner";
 import DisplayTechIcons from "./DisplayTechIcons";
 import Image from "next/image";
@@ -22,7 +21,7 @@ const InterviewQuestions = ({ interview }: Props) => {
     try {
       // Navigate to the actual interview interface
       router.push(`/interview/${interview.id}/start`);
-    } catch (error) {
+    } catch {
       toast.error("Failed to start interview");
     } finally {
       setLoading(false);

@@ -4,7 +4,7 @@ import { useEffect } from 'react';
 
 export default function WindowCloseHandler() {
   useEffect(() => {
-    const handleBeforeUnload = (event: BeforeUnloadEvent) => {
+    const handleBeforeUnload = () => {
       // Use sendBeacon for reliable logout on page unload
       const logoutUrl = '/api/logout';
       if (navigator.sendBeacon) {

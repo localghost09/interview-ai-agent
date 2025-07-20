@@ -49,8 +49,7 @@ export const getRandomInterviewCover = () => {
 export const generateQuestions = async (
   role: string, 
   level: string, 
-  techstack: string[], 
-  type: string
+  techstack: string[]
 ): Promise<string[]> => {
   // This would typically call an AI service to generate questions
   // For now, we'll return some sample questions based on the tech stack

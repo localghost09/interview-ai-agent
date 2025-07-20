@@ -1,6 +1,7 @@
 import { getInterview } from "@/lib/actions/interview.action";
 import { notFound } from "next/navigation";
 import InterviewInterface from "@/components/InterviewInterface";
+import { requireAuth } from "@/lib/auth";
 
 interface Props {
   params: {
@@ -9,6 +10,7 @@ interface Props {
 }
 
 const InterviewStartPage = async ({ params }: Props) => {
+  await requireAuth(); // Ensure user is authenticated
   const resolvedParams = await params;
   const result = await getInterview(resolvedParams.id);
   

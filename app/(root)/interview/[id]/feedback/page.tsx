@@ -2,6 +2,7 @@ import { getFeedbackByInterview } from "@/lib/actions/feedback.action";
 import { getInterview } from "@/lib/actions/interview.action";
 import { notFound } from "next/navigation";
 import FeedbackDisplay from "@/components/FeedbackDisplay";
+import { requireAuth } from "@/lib/auth";
 
 interface Props {
   params: {
@@ -10,6 +11,7 @@ interface Props {
 }
 
 const FeedbackPage = async ({ params }: Props) => {
+  await requireAuth(); // Ensure user is authenticated
   const resolvedParams = await params;
   const [interviewResult, feedbackResult] = await Promise.all([
     getInterview(resolvedParams.id),

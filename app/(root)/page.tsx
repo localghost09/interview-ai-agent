@@ -5,9 +5,10 @@ import Image from 'next/image'
 import { dummyInterviews } from '@/constants'
 import InterviewCard from '@/components/InterviewCard'
 import { getUserInterviews } from '@/lib/actions/interview.action'
-import { getCurrentUser } from '@/lib/auth'
+import { getCurrentUser, requireAuth } from '@/lib/auth'
 
 const page = async () => {
+  await requireAuth(); // Ensure user is authenticated
   const user = await getCurrentUser();
   
   // Get user interviews if logged in

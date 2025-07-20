@@ -2,8 +2,11 @@ import { Button } from "@/components/ui/button";
 import { createInterview } from "@/lib/actions/interview.action";
 import { redirect } from "next/navigation";
 import InterviewForm from "@/components/InterviewForm";
+import { requireAuth } from "@/lib/auth";
 
-const InterviewPage = () => {
+const InterviewPage = async () => {
+  await requireAuth(); // Ensure user is authenticated
+  
   return (
     <div className="container mx-auto px-4 py-8 max-w-2xl">
       <div className="text-center mb-8">

@@ -88,3 +88,21 @@ export async function setSessionCookie(idToken: string){
         sameSite : 'lax'
     })
 }
+
+export async function logout() {
+    try {
+        const cookieStore = await cookies();
+        cookieStore.delete('session');
+        
+        return {
+            success: true,
+            message: 'Logged out successfully'
+        };
+    } catch (error) {
+        console.error('Error during logout:', error);
+        return {
+            success: false,
+            message: 'Failed to logout'
+        };
+    }
+}

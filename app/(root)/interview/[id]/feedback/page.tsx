@@ -10,9 +10,10 @@ interface Props {
 }
 
 const FeedbackPage = async ({ params }: Props) => {
+  const resolvedParams = await params;
   const [interviewResult, feedbackResult] = await Promise.all([
-    getInterview(params.id),
-    getFeedbackByInterview(params.id)
+    getInterview(resolvedParams.id),
+    getFeedbackByInterview(resolvedParams.id)
   ]);
   
   if (!interviewResult.success || !interviewResult.interview) {

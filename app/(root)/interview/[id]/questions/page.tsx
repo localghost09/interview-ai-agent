@@ -9,7 +9,8 @@ interface Props {
 }
 
 const InterviewQuestionsPage = async ({ params }: Props) => {
-  const result = await getInterview(params.id);
+  const resolvedParams = await params;
+  const result = await getInterview(resolvedParams.id);
   
   if (!result.success || !result.interview) {
     notFound();

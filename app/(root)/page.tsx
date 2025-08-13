@@ -7,6 +7,9 @@ import InterviewCard from '@/components/InterviewCard'
 import { getUserInterviews } from '@/lib/actions/interview.action'
 import { getCurrentUser, requireAuth } from '@/lib/auth'
 
+// Force dynamic rendering
+export const dynamic = 'force-dynamic';
+
 const page = async () => {
   await requireAuth(); // Ensure user is authenticated
   const user = await getCurrentUser();
@@ -66,6 +69,7 @@ const page = async () => {
                 type={interview.type}
                 techstack={interview.techstack}
                 createdAt={interview.createdAt}
+                isDummy={true}
               />
             ))}
           </div>

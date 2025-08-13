@@ -11,6 +11,19 @@ interface Feedback {
   areasForImprovement: string[];
   finalAssessment: string;
   createdAt: string;
+  // Enhanced feedback from real-time analysis
+  performanceLevel?: string;
+  hiringRecommendation?: string;
+  keyStrengths?: string[];
+  improvementAreas?: string[];
+  nextSteps?: string[];
+  interviewerNotes?: string;
+  detailedAnalysis?: {
+    technical: number;
+    communication: number;
+    problemSolving: number;
+    overallKnowledge: number;
+  };
 }
 
 interface Interview {
@@ -30,6 +43,25 @@ interface CreateFeedbackParams {
   userId: string;
   transcript: { role: string; content: string }[];
   feedbackId?: string;
+  finalAnalysis?: {
+    overallScore: number;
+    totalQuestions: number;
+    answeredQuestions: number;
+    averageScore: number;
+    finalFeedback: string;
+    performanceLevel: string;
+    detailedAnalysis: {
+      technical: number;
+      communication: number;
+      problemSolving: number;
+      overallKnowledge: number;
+    };
+    keyStrengths: string[];
+    improvementAreas: string[];
+    hiringRecommendation: string;
+    nextSteps: string[];
+    interviewerNotes: string;
+  };
 }
 
 interface User {

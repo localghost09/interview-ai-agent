@@ -142,10 +142,73 @@ const FeedbackDisplay = ({ interview, feedback }: Props) => {
         <h2 className="text-xl font-semibold text-blue-900 mb-4">
           Final Assessment
         </h2>
-        <p className="text-blue-800 leading-relaxed">
+        <p className="text-blue-800 leading-relaxed mb-4">
           {feedback.finalAssessment}
         </p>
+        
+        {/* Enhanced Analysis Display */}
+        {feedback.performanceLevel && (
+          <div className="mt-4 p-4 bg-white rounded-lg border">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="font-semibold text-gray-900">Performance Level:</h3>
+              <span className={`px-3 py-1 rounded-full text-sm font-medium ${
+                feedback.performanceLevel === 'Excellent' ? 'bg-green-100 text-green-800' :
+                feedback.performanceLevel === 'Good' ? 'bg-blue-100 text-blue-800' :
+                feedback.performanceLevel === 'Average' ? 'bg-yellow-100 text-yellow-800' :
+                feedback.performanceLevel === 'Needs Improvement' ? 'bg-orange-100 text-orange-800' :
+                'bg-red-100 text-red-800'
+              }`}>
+                {feedback.performanceLevel}
+              </span>
+            </div>
+            
+            {feedback.hiringRecommendation && (
+              <div className="flex items-center justify-between">
+                <h3 className="font-semibold text-gray-900">Hiring Recommendation:</h3>
+                <span className={`px-3 py-1 rounded-full text-sm font-medium ${
+                  feedback.hiringRecommendation === 'Strong Hire' ? 'bg-green-100 text-green-800' :
+                  feedback.hiringRecommendation === 'Hire' ? 'bg-blue-100 text-blue-800' :
+                  feedback.hiringRecommendation === 'No Hire' ? 'bg-orange-100 text-orange-800' :
+                  'bg-red-100 text-red-800'
+                }`}>
+                  {feedback.hiringRecommendation}
+                </span>
+              </div>
+            )}
+          </div>
+        )}
       </div>
+
+      {/* Next Steps */}
+      {feedback.nextSteps && feedback.nextSteps.length > 0 && (
+        <div className="bg-white rounded-xl shadow-lg p-6">
+          <h2 className="text-xl font-semibold text-gray-900 mb-4">
+            📋 Next Steps for Development
+          </h2>
+          <div className="space-y-3">
+            {feedback.nextSteps.map((step, index) => (
+              <div key={index} className="flex items-start">
+                <div className="w-6 h-6 bg-blue-500 text-white rounded-full flex items-center justify-center text-sm font-medium mr-3 mt-0.5">
+                  {index + 1}
+                </div>
+                <p className="text-gray-700 flex-1">{step}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Interviewer Notes */}
+      {feedback.interviewerNotes && (
+        <div className="bg-gray-50 rounded-xl p-6">
+          <h2 className="text-xl font-semibold text-gray-900 mb-4">
+            🗒️ Interviewer Notes
+          </h2>
+          <p className="text-gray-700 leading-relaxed italic">
+            &ldquo;{feedback.interviewerNotes}&rdquo;
+          </p>
+        </div>
+      )}
 
       {/* Action Buttons */}
       <div className="flex gap-4 justify-center">

@@ -1,7 +1,10 @@
 import { getInterview } from "@/lib/actions/interview.action";
 import { notFound } from "next/navigation";
 import InterviewInterface from "@/components/InterviewInterface";
-import { requireAuth } from "@/lib/auth";
+import { requireAuth, getCurrentUser } from "@/lib/auth";
+
+// Force dynamic rendering
+export const dynamic = 'force-dynamic';
 
 interface Props {
   params: Promise<{
@@ -11,6 +14,12 @@ interface Props {
 
 const InterviewStartPage = async ({ params }: Props) => {
   await requireAuth(); // Ensure user is authenticated
+  const user = await getCurrentUser();
+  
+  if (!user) {
+    notFound();
+  }
+  
   const resolvedParams = await params;
   const result = await getInterview(resolvedParams.id);
   
@@ -20,7 +29,7 @@ const InterviewStartPage = async ({ params }: Props) => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <InterviewInterface interview={result.interview} />
+      <InterviewInterface interview={result.interview} userId={user.uid} />
     </div>
   );
 };

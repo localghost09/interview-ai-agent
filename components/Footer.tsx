@@ -49,24 +49,29 @@ const Footer = () => {
             <h4 className="text-white font-semibold mb-4">Support</h4>
             <ul className="space-y-2">
               <li>
-                <a href="mailto:support@aimockprep.com" className="text-gray-400 hover:text-white transition-colors">
+                <Link href="/contact" className="text-gray-400 hover:text-white transition-colors">
                   Contact Us
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="#" className="text-gray-400 hover:text-white transition-colors">
+                <Link href="/help" className="text-gray-400 hover:text-white transition-colors">
                   Help Center
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="#" className="text-gray-400 hover:text-white transition-colors">
+                <Link href="/about" className="text-gray-400 hover:text-white transition-colors">
+                  About Us
+                </Link>
+              </li>
+              <li>
+                <Link href="/privacy" className="text-gray-400 hover:text-white transition-colors">
                   Privacy Policy
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="#" className="text-gray-400 hover:text-white transition-colors">
+                <Link href="/terms" className="text-gray-400 hover:text-white transition-colors">
                   Terms of Service
-                </a>
+                </Link>
               </li>
             </ul>
           </div>

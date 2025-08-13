@@ -13,8 +13,8 @@ export async function createInterview(params: {
   const { userId, role, level, techstack, type } = params;
 
   try {
-    // Generate interview questions based on role, level, and tech stack
-    const questions = await generateQuestions(role, level, techstack);
+    // Generate interview questions based on role, level, tech stack, and type
+    const questions = await generateQuestions(role, level, techstack, type);
     
     const interviewData = {
       userId,
@@ -76,7 +76,7 @@ export async function getUserInterviews(userId: string) {
       .where('userId', '==', userId)
       .get();
 
-    const interviews = snapshot.docs.map(doc => ({
+    const interviews = snapshot.docs.map((doc: FirebaseFirestore.QueryDocumentSnapshot) => ({
       id: doc.id,
       ...doc.data()
     })) as Interview[];

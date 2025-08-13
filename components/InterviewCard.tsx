@@ -6,10 +6,44 @@ import  DisplayTechIcons from  './DisplayTechIcons';
 import { Button } from './ui/button';
 import Link from 'next/link';
 
-const InterviewCard = ({interviewId, role,type,techstack,createdAt}: InterviewCardProps) => {
+interface InterviewCardProps {
+  interviewId: string;
+  userId: string;
+  role: string;
+  type: string;
+  techstack: string[];
+  createdAt: string;
+  isDummy?: boolean; // Add this prop to identify dummy interviews
+}
+
+const InterviewCard = ({interviewId, role,type,techstack,createdAt, isDummy = false}: InterviewCardProps) => {
     const feedback = null as Feedback | null;
     const normalixedType = /mix/gi.test(type) ? 'Mixed' :type;
     const formattedDate = dayjs(feedback?.createdAt || createdAt || Date.now()).format('DD/MM/YYYY');
+  
+  // For dummy interviews, create a URL with pre-filled data
+  const getInterviewUrl = () => {
+    if (isDummy) {
+      const params = new URLSearchParams({
+        role: role,
+        type: type.toLowerCase(),
+        level: 'junior', // default level
+        techstack: techstack.join(',')
+      });
+      return `/interview?${params.toString()}`;
+    }
+    
+    // For real interviews
+    return feedback ? `/interview/${interviewId}/feedback` : `/interview/${interviewId}/questions`;
+  };
+  
+  const getButtonText = () => {
+    if (isDummy) {
+      return 'Start Interview';
+    }
+    return feedback ? 'Check Feedback' : 'View Interview';
+  };
+
   return (
     <div className='card-border w-[360px] max-sm:w-full min-h-96'>
       <div className='card-interview'>
@@ -44,10 +78,8 @@ const InterviewCard = ({interviewId, role,type,techstack,createdAt}: InterviewCa
         <div className='flex flex-row justify-between'>
             <DisplayTechIcons techStack={techstack} />
             <Button className='btn-primary'>
-                <Link href={feedback ? `/interview/${interviewId}/feedback` : `/interview/${interviewId}/questions`}>
-                  
-                  {feedback ? 'check Feedback ' : 'view Interview'}
-                
+                <Link href={getInterviewUrl()}>
+                  {getButtonText()}
                 </Link>
             </Button>
         </div>

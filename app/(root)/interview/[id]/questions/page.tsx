@@ -3,6 +3,9 @@ import { notFound } from "next/navigation";
 import InterviewQuestions from "@/components/InterviewQuestions";
 import { requireAuth } from "@/lib/auth";
 
+// Force dynamic rendering
+export const dynamic = 'force-dynamic';
+
 interface Props {
   params: Promise<{
     id: string;

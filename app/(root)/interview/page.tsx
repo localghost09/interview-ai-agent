@@ -1,6 +1,9 @@
 import InterviewForm from "@/components/InterviewForm";
 import { requireAuth } from "@/lib/auth";
 
+// Force dynamic rendering
+export const dynamic = 'force-dynamic';
+
 const InterviewPage = async () => {
   await requireAuth(); // Ensure user is authenticated
   

@@ -4,12 +4,22 @@ import type { NextRequest } from 'next/server';
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   
+  // Explicitly exclude API routes from middleware
+  if (pathname.startsWith('/api/')) {
+    return NextResponse.next();
+  }
+  
   // Allow public paths
   const publicPaths = [
     '/sign-in',
     '/sign-up',
+    '/verify-email',
+    '/about',
+    '/contact',
+    '/help',
+    '/privacy',
+    '/terms',
     '/_next',
-    '/api',
     '/favicon.ico'
   ];
 
@@ -40,13 +50,12 @@ export function middleware(request: NextRequest) {
 export const config = {
   matcher: [
     /*
-     * Match all request paths except for the ones starting with:
-     * - api (API routes)
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
-     * - public files (images, etc.)
+     * Match all request paths except:
+     * - API routes (/api/*)
+     * - Static files (_next/static/*, _next/image/*)
+     * - Public files (favicon.ico, images)
+     * - Support pages (about, contact, help, privacy, terms, verify-email)
      */
-    '/((?!api|_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+    '/((?!api/|_next/static|_next/image|favicon.ico|about|contact|help|privacy|terms|verify-email|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
   ],
 };

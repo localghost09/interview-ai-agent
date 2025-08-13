@@ -14,10 +14,14 @@ import {
 } from "@/components/ui/form"
 import { toast } from "sonner";
 import FormField from "@/components/FormField";
-import { useRouter } from "next/navigation";
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth"
+import EmailVerification from "@/components/EmailVerification";
+import PasswordReset from "@/components/PasswordReset";
+import { useRouter, useSearchParams } from "next/navigation";
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword, sendEmailVerification } from "firebase/auth"
 import { auth } from "@/firebase/client";
 import {signIn , signUp} from "@/lib/actions/auth.action";
+import { emailVerificationConfig } from "@/lib/emailConfig";
+import { useState, useEffect } from "react";
 
 
 const authFormSchema = (type:FormType) =>{
@@ -30,6 +34,11 @@ const authFormSchema = (type:FormType) =>{
 
 const AuthForm = ({ type }:{type: FormType}) => {
     const router = useRouter();
+    const searchParams = useSearchParams();
+    const [showEmailVerification, setShowEmailVerification] = useState(false);
+    const [showPasswordReset, setShowPasswordReset] = useState(false);
+    const [userEmail, setUserEmail] = useState('');
+    const [showEmailExistsHelper, setShowEmailExistsHelper] = useState(false);
     const formSchema = authFormSchema(type);
     
     const form = useForm<z.infer<typeof formSchema>>({
@@ -40,6 +49,14 @@ const AuthForm = ({ type }:{type: FormType}) => {
         password: "",
       },
     })
+
+    // Auto-fill email from URL params when coming from sign-up
+    useEffect(() => {
+      const emailFromUrl = searchParams.get('email');
+      if (emailFromUrl && type === 'sign-in') {
+        form.setValue('email', emailFromUrl);
+      }
+    }, [searchParams, type, form]);
    
     async function onSubmit(values: z.infer<typeof formSchema>) {
       try{
@@ -48,6 +65,9 @@ const AuthForm = ({ type }:{type: FormType}) => {
           const { name,email,password} = values;
 
           const userCredentials = await createUserWithEmailAndPassword(auth,email,password);
+
+          // Send email verification with custom configuration
+          await sendEmailVerification(userCredentials.user, emailVerificationConfig);
 
           const  result = await signUp({
             uid : userCredentials.user.uid,
@@ -60,12 +80,25 @@ const AuthForm = ({ type }:{type: FormType}) => {
             toast.error(result.message);
             return;
           }
-          toast.success('Account Created Successfully. Please Sign In') 
-          router.push('/sign-in')
+          
+          setUserEmail(email);
+          setShowEmailVerification(true);
+          toast.success('Account created! Please check your email to verify your account.') 
+          // Don't redirect immediately, show verification component instead
         }else{
           const {email , password} = values;
 
           const userCredentials = await signInWithEmailAndPassword(auth , email, password);
+
+          // Check if email is verified
+          if (!userCredentials.user.emailVerified) {
+            toast.error('Please verify your email before signing in. Check your inbox for verification email.');
+            
+            // Option to resend verification email
+            await sendEmailVerification(userCredentials.user, emailVerificationConfig);
+            toast.info('Verification email sent again. Please check your inbox.');
+            return;
+          }
 
           const idToken = await userCredentials.user.getIdToken();
 
@@ -81,15 +114,99 @@ const AuthForm = ({ type }:{type: FormType}) => {
           toast.success('Sign In Successfully') 
           router.push('/')
         }
-      }catch(error){
+      }catch(error: unknown){
         console.log(error);
-        toast.error(`Something went wrong ${error}`);
+        
+        const authError = error as { code?: string, message?: string }
+        
+        // Handle specific Firebase auth errors
+        if (authError.code === 'auth/email-already-in-use') {
+          // Check if this is during signup - offer to resend verification
+          if (type === 'sign-up') {
+            setUserEmail(values.email);
+            toast.error('Account exists but may not be verified.', {
+              description: 'Try signing in or reset password if needed.',
+              action: {
+                label: 'Go to Sign In',
+                onClick: () => router.push(`/sign-in?email=${encodeURIComponent(values.email)}`)
+              }
+            });
+          } else {
+            setUserEmail(values.email);
+            setShowEmailExistsHelper(true);
+            toast.error('This email is already registered.', {
+              description: 'Click here to sign in instead.',
+              action: {
+                label: 'Sign In',
+                onClick: () => router.push('/sign-in')
+              }
+            });
+          }
+        } else if (authError.code === 'auth/unauthorized-continue-uri') {
+          toast.error('Email verification setup issue. Please contact support or try again in a few minutes.');
+        } else if (authError.code === 'auth/weak-password') {
+          toast.error('Password should be at least 6 characters long.');
+        } else if (authError.code === 'auth/invalid-email') {
+          toast.error('Please enter a valid email address.');
+        } else if (authError.code === 'auth/user-not-found') {
+          toast.error('No account found with this email. Please sign up first.');
+        } else if (authError.code === 'auth/wrong-password') {
+          toast.error('Incorrect password. Please try again.');
+        } else if (authError.code === 'auth/invalid-credential') {
+          toast.error('Invalid email or password. Please check your credentials.');
+        } else {
+          toast.error(`Authentication error: ${authError.message || 'Unknown error'}`);
+        }
 
       }
       console.log(values)
     }
 
     const isSignIn = type === "sign-in";
+
+    // Show password reset component for sign-in
+    if (showPasswordReset && isSignIn) {
+      return (
+        <div className="card-border lg:min-w-[566px]">
+          <div className="flex flex-col gap-6 card py-14 px-10">
+            <div className="flex flex-row gap-2 justify-center">
+              <Image src='/logo.svg' alt='logo' height={32} width={38}/>
+              <h2 className="text-primary-100">AI MockPrep</h2>
+            </div>
+            <h3 className="text-center">Reset Password</h3>
+            
+            <PasswordReset onBack={() => setShowPasswordReset(false)} />
+          </div>
+        </div>
+      );
+    }
+
+    // Show email verification component for sign-up after account creation
+    if (showEmailVerification && !isSignIn) {
+      return (
+        <div className="card-border lg:min-w-[566px]">
+          <div className="flex flex-col gap-6 card py-14 px-10">
+            <div className="flex flex-row gap-2 justify-center">
+              <Image src='/logo.svg' alt='logo' height={32} width={38}/>
+              <h2 className="text-primary-100">AI MockPrep</h2>
+            </div>
+            <h3 className="text-center">Check Your Email</h3>
+            
+            <EmailVerification email={userEmail} />
+            
+            <p className='text-center text-sm text-gray-400'>
+              Want to use a different email?{' '}
+              <button 
+                onClick={() => setShowEmailVerification(false)}
+                className='font-bold text-blue-400 hover:text-blue-300'
+              >
+                Sign up again
+              </button>
+            </p>
+          </div>
+        </div>
+      );
+    }
 
   return (
     <div className="card-border lg:min-w-[566px]">
@@ -125,8 +242,54 @@ const AuthForm = ({ type }:{type: FormType}) => {
             type="password"
           />
         <Button className="btn" type='submit'>{isSignIn ?'Sign In ' : 'Create an Account'}</Button>
+        
+        {isSignIn && (
+          <div className="text-center">
+            <button
+              type="button"
+              onClick={() => setShowPasswordReset(true)}
+              className="text-sm text-blue-400 hover:text-blue-300 transition-colors"
+            >
+              Forgot your password?
+            </button>
+          </div>
+        )}
       </form>
     </Form>
+    
+    {/* Email Already Exists Helper */}
+    {showEmailExistsHelper && !isSignIn && (
+      <div className="border border-orange-500/20 bg-orange-500/10 rounded-lg p-4 text-center">
+        <div className="text-orange-400 text-sm mb-3">
+          <strong>Email Already Registered</strong>
+        </div>
+        <p className="text-gray-300 text-sm mb-4">
+          The email <strong>{userEmail}</strong> is already associated with an account.
+        </p>
+        <div className="flex gap-3 justify-center">
+          <Button 
+            onClick={() => {
+              // Navigate to sign-in with email prefilled
+              router.push(`/sign-in?email=${encodeURIComponent(userEmail)}`);
+            }}
+            className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-md text-sm transition-colors"
+          >
+            Go to Sign In
+          </Button>
+          <Button 
+            onClick={() => {
+              setShowEmailExistsHelper(false);
+              form.reset();
+            }}
+            variant="outline"
+            className="border-gray-500 text-gray-300 hover:bg-gray-700 px-6 py-2 rounded-md text-sm transition-colors"
+          >
+            Try Different Email
+          </Button>
+        </div>
+      </div>
+    )}
+    
     <p className='text-center'>
       {isSignIn ? 'No account yet?' : 'Already have an account?'}
       <Link href={isSignIn ? '/sign-up' : '/sign-in'} className='font-bold text-user-primary ml-1'>

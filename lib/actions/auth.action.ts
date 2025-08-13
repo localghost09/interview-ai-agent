@@ -48,6 +48,16 @@ export  async function signUp(params:SignUpParams) {
 export async function signIn(params:SignInParams) {
     const {email,idToken} = params;
     try{
+        // Verify the ID token and check email verification
+        const decodedToken = await auth.verifyIdToken(idToken);
+        
+        if (!decodedToken.email_verified) {
+            return {
+                success: false,
+                message: 'Please verify your email before signing in. Check your inbox for verification email.'
+            };
+        }
+
         const userRecord = await auth.getUserByEmail(email);
 
         if(!userRecord){
@@ -64,8 +74,22 @@ export async function signIn(params:SignInParams) {
             message: "Successfully signed in"
         }
 
-    } catch(e){
+    } catch(e: unknown){
         console.log(e);
+
+        const authError = e as { code?: string }
+
+        if (authError.code === 'auth/id-token-expired') {
+            return {
+                success: false,
+                message: 'Session expired. Please sign in again.'
+            };
+        } else if (authError.code === 'auth/invalid-id-token') {
+            return {
+                success: false,
+                message: 'Invalid authentication token. Please sign in again.'
+            };
+        }
 
         return {
             success : false,

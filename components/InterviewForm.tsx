@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
@@ -18,6 +18,7 @@ const TECH_OPTIONS = [
 
 const InterviewForm = () => {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [loading, setLoading] = useState(false);
   const [currentUser, setCurrentUser] = useState<string | null>(null);
   const [formData, setFormData] = useState({
@@ -31,7 +32,23 @@ const InterviewForm = () => {
     // In a real app, you'd get this from your auth context
     // For now, we'll use a dummy user ID
     setCurrentUser("user1");
-  }, []);
+    
+    // Pre-fill form from URL parameters
+    const role = searchParams.get('role');
+    const type = searchParams.get('type');
+    const level = searchParams.get('level');
+    const techstack = searchParams.get('techstack');
+    
+    if (role || type || level || techstack) {
+      setFormData(prev => ({
+        ...prev,
+        role: role || prev.role,
+        type: type === 'mixed' ? 'Mixed' : type === 'technical' ? 'Technical' : type || prev.type,
+        level: level ? level.charAt(0).toUpperCase() + level.slice(1) : prev.level,
+        techstack: techstack ? techstack.split(',').map(t => t.trim()) : prev.techstack
+      }));
+    }
+  }, [searchParams]);
 
   const handleTechToggle = (tech: string) => {
     setFormData(prev => ({

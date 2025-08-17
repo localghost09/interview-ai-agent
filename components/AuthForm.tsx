@@ -73,9 +73,10 @@ const AuthForm = ({ type }:{type: FormType}) => {
 
           const userCredentials = await createUserWithEmailAndPassword(auth,email,password);
 
-          // Send email verification with custom configuration
+          // Send email verification - try simple approach first
           try {
-            await sendEmailVerification(userCredentials.user, emailVerificationConfig);
+            // Try without any custom configuration first (simplest approach)
+            await sendEmailVerification(userCredentials.user);
             
             // Store the name in localStorage to use when they verify and sign in
             localStorage.setItem(`pendingUser_${userCredentials.user.uid}`, name!);
@@ -84,21 +85,36 @@ const AuthForm = ({ type }:{type: FormType}) => {
             setShowEmailVerification(true);
             toast.success('Account created! Please check your email to verify your account before signing in.') 
           } catch (emailError) {
-            console.error('Email verification error:', emailError);
-            // Try with fallback configuration
+            console.error('Simple email verification failed:', emailError);
+            
+            // Try with custom configuration as fallback
             try {
-              await sendEmailVerification(userCredentials.user, fallbackEmailVerificationConfig);
-              toast.success('Account created! Please check your email to verify your account before signing in.');
+              await sendEmailVerification(userCredentials.user, emailVerificationConfig);
+              
               localStorage.setItem(`pendingUser_${userCredentials.user.uid}`, name!);
               setUserEmail(email);
               setShowEmailVerification(true);
-            } catch (fallbackError) {
-              console.error('Fallback email verification error:', fallbackError);
-              toast.error('Account created but failed to send verification email. Please contact support.');
-              // Still store the user info and show verification component
-              localStorage.setItem(`pendingUser_${userCredentials.user.uid}`, name!);
-              setUserEmail(email);
-              setShowEmailVerification(true);
+              toast.success('Account created! Please check your email to verify your account before signing in.') 
+            } catch (customError) {
+              console.error('Custom email verification failed:', customError);
+              
+              // Last attempt with fallback config
+              try {
+                await sendEmailVerification(userCredentials.user, fallbackEmailVerificationConfig);
+                
+                localStorage.setItem(`pendingUser_${userCredentials.user.uid}`, name!);
+                setUserEmail(email);
+                setShowEmailVerification(true);
+                toast.success('Account created! Please check your email to verify your account.') 
+              } catch (fallbackError) {
+                console.error('All email verification attempts failed:', fallbackError);
+                
+                // Still allow user to proceed to verification screen to manually resend
+                localStorage.setItem(`pendingUser_${userCredentials.user.uid}`, name!);
+                setUserEmail(email);
+                setShowEmailVerification(true);
+                toast.error('Account created but failed to send verification email. You can resend it from the next screen.');
+              }
             }
           }
           // Don't redirect immediately, show verification component instead
@@ -113,17 +129,25 @@ const AuthForm = ({ type }:{type: FormType}) => {
             
             // Option to resend verification email
             try {
-              await sendEmailVerification(userCredentials.user, emailVerificationConfig);
+              // Try simple approach first
+              await sendEmailVerification(userCredentials.user);
               toast.info('Verification email sent again. Please check your inbox.');
             } catch (emailError) {
-              console.error('Failed to resend verification email:', emailError);
-              // Try with fallback configuration
+              console.error('Simple resend verification failed:', emailError);
+              // Try with custom configuration
               try {
-                await sendEmailVerification(userCredentials.user, fallbackEmailVerificationConfig);
+                await sendEmailVerification(userCredentials.user, emailVerificationConfig);
                 toast.info('Verification email sent. Please check your inbox.');
-              } catch (fallbackError) {
-                console.error('Fallback email verification also failed:', fallbackError);
-                toast.error('Failed to send verification email. Please contact support or try again later.');
+              } catch (customError) {
+                console.error('Custom resend verification failed:', customError);
+                // Try with fallback configuration
+                try {
+                  await sendEmailVerification(userCredentials.user, fallbackEmailVerificationConfig);
+                  toast.info('Verification email sent. Please check your inbox.');
+                } catch (fallbackError) {
+                  console.error('All resend verification attempts failed:', fallbackError);
+                  toast.error('Failed to send verification email. Please try again later or contact support.');
+                }
               }
             }
             return;

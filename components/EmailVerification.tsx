@@ -25,21 +25,29 @@ const EmailVerification = ({ email }: EmailVerificationProps) => {
 
     setSending(true)
     try {
-      await sendEmailVerification(auth.currentUser, emailVerificationConfig)
+      // Try simple approach first
+      await sendEmailVerification(auth.currentUser);
       toast.success('Verification email sent! Please check your inbox.')
     } catch (error: unknown) {
-      console.error('Error sending verification email:', error)
-      // Try with fallback configuration
+      console.error('Simple email verification failed:', error)
+      // Try with custom configuration
       try {
-        await sendEmailVerification(auth.currentUser, fallbackEmailVerificationConfig)
+        await sendEmailVerification(auth.currentUser, emailVerificationConfig)
         toast.success('Verification email sent! Please check your inbox.')
-      } catch (fallbackError: unknown) {
-        console.error('Fallback email verification also failed:', fallbackError)
-        const authError = fallbackError as { code?: string }
-        if (authError.code === 'auth/too-many-requests') {
-          toast.error('Too many requests. Please wait a moment before trying again.')
-        } else {
-          toast.error('Failed to send verification email. Please contact support.')
+      } catch (customError: unknown) {
+        console.error('Custom email verification failed:', customError)
+        // Try with fallback configuration
+        try {
+          await sendEmailVerification(auth.currentUser, fallbackEmailVerificationConfig)
+          toast.success('Verification email sent! Please check your inbox.')
+        } catch (fallbackError: unknown) {
+          console.error('All email verification attempts failed:', fallbackError)
+          const authError = fallbackError as { code?: string }
+          if (authError.code === 'auth/too-many-requests') {
+            toast.error('Too many requests. Please wait a moment before trying again.')
+          } else {
+            toast.error('Failed to send verification email. Please try again later or contact support.')
+          }
         }
       }
     } finally {

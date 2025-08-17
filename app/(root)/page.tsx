@@ -60,7 +60,7 @@ const page = async () => {
         <section className='flex flex-col gap-6 mt-8'>
           <h2>Popular Interview Types</h2>
           <div className='interviews-section'>
-          {dummyInterviews.map((interview) => (
+          {dummyInterviews.map((interview, index) => (
               <InterviewCard 
                 key={interview.id} 
                 interviewId={interview.id}
@@ -70,6 +70,7 @@ const page = async () => {
                 techstack={interview.techstack}
                 createdAt={interview.createdAt}
                 isDummy={true}
+                index={index}
               />
             ))}
           </div>

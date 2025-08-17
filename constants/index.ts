@@ -191,7 +191,7 @@ export const mappings = {
 
 export const interviewCovers = [
   "/adobe.png",
-  "/amazon.png",
+  "/amazon.png", 
   "/facebook.png",
   "/hostinger.png",
   "/pinterest.png",
@@ -202,6 +202,12 @@ export const interviewCovers = [
   "/telegram.png",
   "/tiktok.png",
   "/yahoo.png",
+  "/google.svg",
+  "/microsoft.svg",
+  "/apple.svg",
+  "/netflix.svg",
+  "/uber.svg",
+  "/airbnb.svg"
 ];
 
 export const dummyInterviews: Interview[] = [

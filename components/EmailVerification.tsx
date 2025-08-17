@@ -7,6 +7,7 @@ import { emailVerificationConfig } from '@/lib/emailConfig'
 import { toast } from 'sonner'
 import { Button } from './ui/button'
 import { Mail, RefreshCw } from 'lucide-react'
+import { useRouter } from 'next/navigation'
 
 interface EmailVerificationProps {
   email: string
@@ -14,6 +15,7 @@ interface EmailVerificationProps {
 
 const EmailVerification = ({ email }: EmailVerificationProps) => {
   const [sending, setSending] = useState(false)
+  const router = useRouter()
 
   const handleResendVerification = async () => {
     if (!auth.currentUser) {
@@ -38,6 +40,11 @@ const EmailVerification = ({ email }: EmailVerificationProps) => {
     }
   }
 
+  const handleGoToSignIn = () => {
+    // Redirect to sign-in page with email pre-filled
+    router.push(`/sign-in?email=${encodeURIComponent(email)}`)
+  }
+
   return (
     <div className="bg-gradient-to-r from-blue-600/20 to-purple-600/20 rounded-xl p-6 border border-blue-500/20">
       <div className="flex items-center gap-3 mb-4">
@@ -49,6 +56,13 @@ const EmailVerification = ({ email }: EmailVerificationProps) => {
         We&apos;ve sent a verification email to <span className="font-medium text-blue-300">{email}</span>. 
         Please check your inbox and click the verification link to activate your account.
       </p>
+      
+      <div className="bg-blue-600/20 border border-blue-500/30 rounded-lg p-4 mb-4">
+        <p className="text-sm text-blue-200">
+          💡 <strong>What happens next:</strong> After clicking the verification link in your email, 
+          you&apos;ll be automatically redirected to the sign-in page where you can access your account.
+        </p>
+      </div>
       
       <div className="flex flex-col sm:flex-row gap-3">
         <Button
@@ -62,7 +76,7 @@ const EmailVerification = ({ email }: EmailVerificationProps) => {
         </Button>
         
         <Button
-          onClick={() => window.location.reload()}
+          onClick={handleGoToSignIn}
           className="bg-blue-600 hover:bg-blue-700"
         >
           I&apos;ve Verified My Email

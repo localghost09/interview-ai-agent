@@ -3,16 +3,16 @@ import { ActionCodeSettings } from 'firebase/auth';
 // Get the base URL for email configurations
 const getBaseUrl = () => {
   if (process.env.NODE_ENV === 'production') {
-    // Use stable Vercel alias URL
-    return process.env.NEXT_PUBLIC_SITE_URL || 'https://ai-mockprep-stable.vercel.app';
+    // Use the correct production URL
+    return process.env.NEXT_PUBLIC_SITE_URL || 'https://ai-mockprep.vercel.app';
   }
   return 'http://localhost:3000';
 };
 
 // Email verification configuration
 export const emailVerificationConfig: ActionCodeSettings = {
-  // The URL to redirect to after email verification
-  url: `${getBaseUrl()}/verify-email`,
+  // The URL to redirect to after email verification - go directly to sign-in page
+  url: `${getBaseUrl()}/sign-in?verified=true`,
   
   // This must be true for email verification
   handleCodeInApp: true,

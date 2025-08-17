@@ -50,11 +50,18 @@ const AuthForm = ({ type }:{type: FormType}) => {
       },
     })
 
-    // Auto-fill email from URL params when coming from sign-up
+    // Auto-fill email from URL params when coming from sign-up and show verification success
     useEffect(() => {
       const emailFromUrl = searchParams.get('email');
+      const verifiedFromUrl = searchParams.get('verified');
+      
       if (emailFromUrl && type === 'sign-in') {
         form.setValue('email', emailFromUrl);
+      }
+      
+      // Show success message if user just verified their email
+      if (verifiedFromUrl === 'true' && type === 'sign-in') {
+        toast.success('Email verified successfully! You can now sign in to your account.');
       }
     }, [searchParams, type, form]);
    

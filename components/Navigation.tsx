@@ -31,12 +31,27 @@ export default function Navigation() {
 
   const handleLogout = async () => {
     try {
-      const response = await fetch('/api/logout', { method: 'POST' });
-      if (response.ok) {
+      const response = await fetch('/api/logout', { 
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      const data = await response.json();
+      
+      if (response.ok && data.success) {
+        // Force a hard refresh to clear all client-side state
+        window.location.href = '/sign-in';
+      } else {
+        console.error('Logout failed:', data.message);
+        // Still redirect even if server logout fails to clear client state
         window.location.href = '/sign-in';
       }
     } catch (error) {
       console.error('Logout error:', error);
+      // Fallback: still redirect to clear client state
+      window.location.href = '/sign-in';
     }
   };
 

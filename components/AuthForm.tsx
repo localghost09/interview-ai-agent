@@ -69,21 +69,12 @@ const AuthForm = ({ type }:{type: FormType}) => {
           // Send email verification with custom configuration
           await sendEmailVerification(userCredentials.user, emailVerificationConfig);
 
-          const  result = await signUp({
-            uid : userCredentials.user.uid,
-            name : name!,
-            email,
-            password,
-          })
-
-          if(!result?.success){
-            toast.error(result.message);
-            return;
-          }
+          // Store the name in localStorage to use when they verify and sign in
+          localStorage.setItem(`pendingUser_${userCredentials.user.uid}`, name!);
           
           setUserEmail(email);
           setShowEmailVerification(true);
-          toast.success('Account created! Please check your email to verify your account.') 
+          toast.success('Account created! Please check your email to verify your account before signing in.') 
           // Don't redirect immediately, show verification component instead
         }else{
           const {email , password} = values;
@@ -107,9 +98,45 @@ const AuthForm = ({ type }:{type: FormType}) => {
             return;
           }
 
-          await signIn({
+          // First sign in after email verification - create user in Firestore
+          const signInResult = await signIn({
             email,idToken
-          })
+          });
+
+          // If sign in fails because user doesn't exist in Firestore, create them
+          if (!signInResult.success && signInResult.message.includes('User does not exist')) {
+            // Get the stored name from localStorage or use a default
+            const storedName = localStorage.getItem(`pendingUser_${userCredentials.user.uid}`);
+            const userName = storedName || userCredentials.user.displayName || 'User';
+            
+            const signUpResult = await signUp({
+              uid: userCredentials.user.uid,
+              name: userName,
+              email,
+            });
+
+            if (!signUpResult.success) {
+              toast.error(signUpResult.message);
+              return;
+            }
+
+            // Clean up the stored name
+            localStorage.removeItem(`pendingUser_${userCredentials.user.uid}`);
+            toast.success('Account setup completed! Welcome!');
+
+            // Try signing in again after creating user
+            const finalSignInResult = await signIn({
+              email,idToken
+            });
+
+            if (!finalSignInResult.success) {
+              toast.error(finalSignInResult.message);
+              return;
+            }
+          } else if (!signInResult.success) {
+            toast.error(signInResult.message);
+            return;
+          }
 
           toast.success('Sign In Successfully') 
           router.push('/')

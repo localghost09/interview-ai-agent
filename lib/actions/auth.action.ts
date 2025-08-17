@@ -6,7 +6,7 @@ import { cookies } from "next/headers";
 const ONE_WEEK = 60 * 60 * 24 * 7;
 
 export  async function signUp(params:SignUpParams) {
-    const {uid, name , email} = params;
+    const {uid, name , email} = params; // Remove password from destructuring
 
     try{
         const userRecord = await db.collection('users').doc(uid).get();
@@ -24,7 +24,7 @@ export  async function signUp(params:SignUpParams) {
 
         return { 
             success : true,
-            message : "Account created successfully . Please sign in."
+            message : "Account setup completed successfully."
         }
 
     }catch(e: unknown){

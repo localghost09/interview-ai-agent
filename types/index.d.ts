@@ -112,7 +112,7 @@ interface SignUpParams {
   uid: string;
   name: string;
   email: string;
-  password: string;
+  password?: string; // Make password optional for verified email sign-up
 }
 
 type FormType = "sign-in" | "sign-up";

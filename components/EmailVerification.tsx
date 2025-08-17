@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { sendEmailVerification } from 'firebase/auth'
 import { auth } from '@/firebase/client'
-import { emailVerificationConfig } from '@/lib/emailConfig'
+import { emailVerificationConfig, fallbackEmailVerificationConfig } from '@/lib/emailConfig'
 import { toast } from 'sonner'
 import { Button } from './ui/button'
 import { Mail, RefreshCw } from 'lucide-react'
@@ -29,11 +29,18 @@ const EmailVerification = ({ email }: EmailVerificationProps) => {
       toast.success('Verification email sent! Please check your inbox.')
     } catch (error: unknown) {
       console.error('Error sending verification email:', error)
-      const authError = error as { code?: string }
-      if (authError.code === 'auth/too-many-requests') {
-        toast.error('Too many requests. Please wait a moment before trying again.')
-      } else {
-        toast.error('Failed to send verification email. Please try again.')
+      // Try with fallback configuration
+      try {
+        await sendEmailVerification(auth.currentUser, fallbackEmailVerificationConfig)
+        toast.success('Verification email sent! Please check your inbox.')
+      } catch (fallbackError: unknown) {
+        console.error('Fallback email verification also failed:', fallbackError)
+        const authError = fallbackError as { code?: string }
+        if (authError.code === 'auth/too-many-requests') {
+          toast.error('Too many requests. Please wait a moment before trying again.')
+        } else {
+          toast.error('Failed to send verification email. Please contact support.')
+        }
       }
     } finally {
       setSending(false)

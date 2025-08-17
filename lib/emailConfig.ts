@@ -3,8 +3,12 @@ import { ActionCodeSettings } from 'firebase/auth';
 // Get the base URL for email configurations
 const getBaseUrl = () => {
   if (process.env.NODE_ENV === 'production') {
-    // Use the correct production URL
-    return process.env.NEXT_PUBLIC_SITE_URL || 'https://ai-mockprep.vercel.app';
+    // Check if we're running on Vercel and use the current deployment URL
+    if (process.env.VERCEL_URL) {
+      return `https://${process.env.VERCEL_URL}`;
+    }
+    // Fallback to configured site URL or default
+    return process.env.NEXT_PUBLIC_SITE_URL || 'https://ai-mockprep-fixed.vercel.app';
   }
   return 'http://localhost:3000';
 };
@@ -16,21 +20,13 @@ export const emailVerificationConfig: ActionCodeSettings = {
   
   // This must be true for email verification
   handleCodeInApp: true,
-  
-  // Optional: iOS app bundle ID
-  // iOS: {
-  //   bundleId: 'com.example.aimockprep'
-  // },
-  
-  // Optional: Android app package name
-  // android: {
-  //   packageName: 'com.example.aimockprep',
-  //   installApp: true,
-  //   minimumVersion: '12'
-  // },
-  
-  // Optional: Dynamic links
-  // dynamicLinkDomain: 'example.page.link'
+};
+
+// Simpler fallback configuration if the main one fails
+export const fallbackEmailVerificationConfig: ActionCodeSettings = {
+  // Just use the auth domain for the redirect
+  url: 'https://ai-mockprep.firebaseapp.com/__/auth/action',
+  handleCodeInApp: false, // Let Firebase handle it completely
 };
 
 // Email templates configuration (for Firebase console)

@@ -20,7 +20,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword, sendEmailVerification } from "firebase/auth"
 import { auth } from "@/firebase/client";
 import {signIn , signUp} from "@/lib/actions/auth.action";
-import { emailVerificationConfig } from "@/lib/emailConfig";
+import { emailVerificationConfig, fallbackEmailVerificationConfig } from "@/lib/emailConfig";
 import { useState, useEffect } from "react";
 
 
@@ -74,14 +74,33 @@ const AuthForm = ({ type }:{type: FormType}) => {
           const userCredentials = await createUserWithEmailAndPassword(auth,email,password);
 
           // Send email verification with custom configuration
-          await sendEmailVerification(userCredentials.user, emailVerificationConfig);
-
-          // Store the name in localStorage to use when they verify and sign in
-          localStorage.setItem(`pendingUser_${userCredentials.user.uid}`, name!);
-          
-          setUserEmail(email);
-          setShowEmailVerification(true);
-          toast.success('Account created! Please check your email to verify your account before signing in.') 
+          try {
+            await sendEmailVerification(userCredentials.user, emailVerificationConfig);
+            
+            // Store the name in localStorage to use when they verify and sign in
+            localStorage.setItem(`pendingUser_${userCredentials.user.uid}`, name!);
+            
+            setUserEmail(email);
+            setShowEmailVerification(true);
+            toast.success('Account created! Please check your email to verify your account before signing in.') 
+          } catch (emailError) {
+            console.error('Email verification error:', emailError);
+            // Try with fallback configuration
+            try {
+              await sendEmailVerification(userCredentials.user, fallbackEmailVerificationConfig);
+              toast.success('Account created! Please check your email to verify your account before signing in.');
+              localStorage.setItem(`pendingUser_${userCredentials.user.uid}`, name!);
+              setUserEmail(email);
+              setShowEmailVerification(true);
+            } catch (fallbackError) {
+              console.error('Fallback email verification error:', fallbackError);
+              toast.error('Account created but failed to send verification email. Please contact support.');
+              // Still store the user info and show verification component
+              localStorage.setItem(`pendingUser_${userCredentials.user.uid}`, name!);
+              setUserEmail(email);
+              setShowEmailVerification(true);
+            }
+          }
           // Don't redirect immediately, show verification component instead
         }else{
           const {email , password} = values;
@@ -93,8 +112,20 @@ const AuthForm = ({ type }:{type: FormType}) => {
             toast.error('Please verify your email before signing in. Check your inbox for verification email.');
             
             // Option to resend verification email
-            await sendEmailVerification(userCredentials.user, emailVerificationConfig);
-            toast.info('Verification email sent again. Please check your inbox.');
+            try {
+              await sendEmailVerification(userCredentials.user, emailVerificationConfig);
+              toast.info('Verification email sent again. Please check your inbox.');
+            } catch (emailError) {
+              console.error('Failed to resend verification email:', emailError);
+              // Try with fallback configuration
+              try {
+                await sendEmailVerification(userCredentials.user, fallbackEmailVerificationConfig);
+                toast.info('Verification email sent. Please check your inbox.');
+              } catch (fallbackError) {
+                console.error('Fallback email verification also failed:', fallbackError);
+                toast.error('Failed to send verification email. Please contact support or try again later.');
+              }
+            }
             return;
           }
 

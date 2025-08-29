@@ -1,14 +1,136 @@
-import { Metadata } from "next";
+'use client';
+
+import { useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, Mail, MessageSquare, Phone, Clock, MapPin } from "lucide-react";
+import { ArrowLeft, Mail, MessageSquare, Phone, Clock, MapPin, X, Send, User, Bot, Minimize2 } from "lucide-react";
 import ContactForm from "@/components/ContactForm";
 
-export const metadata: Metadata = {
-  title: "Contact Us | AI MockPrep",
-  description: "Get in touch with the AI MockPrep support team for help and inquiries",
-};
+// Message type definition
+interface Message {
+  id: string;
+  text: string;
+  sender: 'user' | 'agent';
+  timestamp: Date;
+}
+
+// Simple Live Chat Component
+function LiveChat({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
+  const [messages, setMessages] = useState<Message[]>([
+    { id: '1', text: 'Hello! Welcome to AI MockPrep support. How can I help you today?', sender: 'agent', timestamp: new Date() }
+  ]);
+  const [newMessage, setNewMessage] = useState('');
+  const [isTyping, setIsTyping] = useState(false);
+
+  const sendMessage = () => {
+    if (!newMessage.trim()) return;
+
+    const userMessage: Message = {
+      id: Date.now().toString(),
+      text: newMessage,
+      sender: 'user',
+      timestamp: new Date()
+    };
+
+    setMessages(prev => [...prev, userMessage]);
+    setNewMessage('');
+    setIsTyping(true);
+
+    // Auto response
+    setTimeout(() => {
+      const response = newMessage.toLowerCase().includes('password') 
+        ? 'I can help with login issues! Try the "Forgot Password" link on sign-in page.'
+        : `Thanks for your message about "${newMessage}". For detailed support, email us at localghost678@gmail.com`;
+        
+      const agentMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        text: response,
+        sender: 'agent',
+        timestamp: new Date()
+      };
+      
+      setMessages(prev => [...prev, agentMessage]);
+      setIsTyping(false);
+    }, 1500);
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed bottom-4 right-4 z-50 bg-gray-800 rounded-lg shadow-2xl border border-gray-700 h-96 w-80">
+      {/* Header */}
+      <div className="bg-green-600 rounded-t-lg p-4 flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <MessageSquare className="w-5 h-5 text-white" />
+          <div>
+            <h3 className="text-white font-semibold">Live Chat Support</h3>
+            <p className="text-green-100 text-xs">Online</p>
+          </div>
+        </div>
+        <button onClick={onClose} className="text-white hover:bg-green-700 p-1 rounded">
+          <X className="w-4 h-4" />
+        </button>
+      </div>
+
+      {/* Messages */}
+      <div className="h-64 overflow-y-auto p-4 space-y-3">
+        {messages.map((message) => (
+          <div key={message.id} className={`flex ${message.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
+            <div className={`flex items-start gap-2 max-w-[80%] ${message.sender === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
+              <div className={`w-6 h-6 rounded-full flex items-center justify-center ${message.sender === 'user' ? 'bg-blue-600' : 'bg-green-600'}`}>
+                {message.sender === 'user' ? <User className="w-3 h-3 text-white" /> : <Bot className="w-3 h-3 text-white" />}
+              </div>
+              <div className={`rounded-lg p-3 ${message.sender === 'user' ? 'bg-blue-600 text-white' : 'bg-gray-700 text-gray-100'}`}>
+                <p className="text-sm">{message.text}</p>
+              </div>
+            </div>
+          </div>
+        ))}
+        
+        {isTyping && (
+          <div className="flex justify-start">
+            <div className="flex items-start gap-2">
+              <div className="w-6 h-6 rounded-full bg-green-600 flex items-center justify-center">
+                <Bot className="w-3 h-3 text-white" />
+              </div>
+              <div className="bg-gray-700 text-gray-100 rounded-lg p-3">
+                <div className="flex space-x-1">
+                  <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
+                  <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                  <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Input */}
+      <div className="p-4 border-t border-gray-700">
+        <div className="flex gap-2">
+          <input
+            type="text"
+            value={newMessage}
+            onChange={(e) => setNewMessage(e.target.value)}
+            onKeyPress={(e) => e.key === 'Enter' && sendMessage()}
+            placeholder="Type your message..."
+            className="flex-1 bg-gray-700 text-white rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+          />
+          <button
+            onClick={sendMessage}
+            disabled={!newMessage.trim()}
+            className="bg-green-600 hover:bg-green-700 disabled:bg-gray-600 text-white p-2 rounded-lg"
+          >
+            <Send className="w-4 h-4" />
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export default function ContactPage() {
+  const [isChatOpen, setIsChatOpen] = useState(false);
+
   return (
     <>
       {/* Header */}
@@ -39,7 +161,10 @@ export default function ContactPage() {
           <MessageSquare className="w-8 h-8 text-white mx-auto mb-3" />
           <h3 className="text-white font-semibold mb-2">Live Chat</h3>
           <p className="text-green-100 text-sm mb-3">Quick questions and help</p>
-          <button className="text-white font-medium hover:underline">
+          <button 
+            onClick={() => setIsChatOpen(true)}
+            className="text-white font-medium hover:underline hover:bg-green-800 px-3 py-1 rounded transition-colors"
+          >
             Start Chat
           </button>
         </div>
@@ -89,7 +214,7 @@ export default function ContactPage() {
                 <MapPin className="w-5 h-5 text-green-400 mt-0.5 flex-shrink-0" />
                 <div>
                   <p className="text-white font-medium">Location</p>
-                  <p className="text-gray-300 text-sm">Global (Remote Team)</p>
+                  <p className="text-gray-300 text-sm">Noida (Remote Team)</p>
                   <p className="text-gray-300 text-sm">Serving users worldwide</p>
                 </div>
               </div>
@@ -119,6 +244,20 @@ export default function ContactPage() {
           </div>
 
           <div className="bg-gradient-to-br from-green-600/20 to-blue-600/20 rounded-xl p-6">
+            <h3 className="text-lg font-semibold text-white mb-3">Need Instant Help?</h3>
+            <p className="text-gray-300 text-sm mb-4">
+              Try our live chat for immediate assistance with common questions and technical support.
+            </p>
+            <button
+              onClick={() => setIsChatOpen(true)}
+              className="inline-flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition-colors text-sm font-medium"
+            >
+              <MessageSquare className="w-4 h-4" />
+              Start Live Chat
+            </button>
+          </div>
+
+          <div className="bg-gradient-to-br from-red-600/20 to-orange-600/20 rounded-xl p-6">
             <h3 className="text-lg font-semibold text-white mb-3">Bug Reports</h3>
             <p className="text-gray-300 text-sm mb-4">
               Found a bug? Help us improve by providing detailed information about the issue.
@@ -154,6 +293,9 @@ export default function ContactPage() {
           </Link>
         </div>
       </div>
+
+      {/* Live Chat Component */}
+      <LiveChat isOpen={isChatOpen} onClose={() => setIsChatOpen(false)} />
     </>
   );
 }

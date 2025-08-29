@@ -8,7 +8,7 @@ import { Menu, X, FileText, Mail, User, Home, LogOut, Settings, ChevronDown } fr
 export default function Navigation() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
-  const [currentUser, setCurrentUser] = useState<{uid: string; email: string; name: string} | null>(null);
+  const [currentUser, setCurrentUser] = useState<{uid: string; email: string; name: string; photoURL?: string} | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -27,6 +27,17 @@ export default function Navigation() {
     };
 
     getCurrentUser();
+
+    // Listen for profile updates
+    const handleProfileUpdate = () => {
+      getCurrentUser();
+    };
+
+    window.addEventListener('profileUpdated', handleProfileUpdate);
+    
+    return () => {
+      window.removeEventListener('profileUpdated', handleProfileUpdate);
+    };
   }, []);
 
   const handleLogout = async () => {
@@ -126,8 +137,16 @@ export default function Navigation() {
                   onClick={toggleProfile}
                   className="flex items-center gap-2 text-gray-300 hover:text-white transition-colors p-2 rounded-lg hover:bg-gray-800"
                 >
-                  <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center text-white font-medium text-sm">
-                    {currentUser.name?.charAt(0)?.toUpperCase() || currentUser.email?.charAt(0)?.toUpperCase() || 'U'}
+                  <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center text-white font-medium text-sm overflow-hidden">
+                    {currentUser.photoURL ? (
+                      <img 
+                        src={currentUser.photoURL} 
+                        alt="Profile" 
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      currentUser.name?.charAt(0)?.toUpperCase() || currentUser.email?.charAt(0)?.toUpperCase() || 'U'
+                    )}
                   </div>
                   <ChevronDown className={`w-4 h-4 transition-transform ${isProfileOpen ? 'rotate-180' : ''}`} />
                 </button>
@@ -137,8 +156,16 @@ export default function Navigation() {
                     {/* Profile Header */}
                     <div className="p-4 border-b border-gray-700">
                       <div className="flex items-center gap-3">
-                        <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center text-white font-medium text-lg">
-                          {currentUser.name?.charAt(0)?.toUpperCase() || 'U'}
+                        <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center text-white font-medium text-lg overflow-hidden">
+                          {currentUser.photoURL ? (
+                            <img 
+                              src={currentUser.photoURL} 
+                              alt="Profile" 
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            currentUser.name?.charAt(0)?.toUpperCase() || 'U'
+                          )}
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="text-white font-medium truncate">{currentUser.name || 'User'}</div>
@@ -255,8 +282,16 @@ export default function Navigation() {
                 <>
                   <div className="px-3 py-3 text-sm border-t border-gray-700 mt-2 bg-gray-700/50 rounded-md mx-2">
                     <div className="flex items-center gap-3 mb-2">
-                      <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center text-white font-medium">
-                        {currentUser.name?.charAt(0)?.toUpperCase() || currentUser.email?.charAt(0)?.toUpperCase() || 'U'}
+                      <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center text-white font-medium overflow-hidden">
+                        {currentUser.photoURL ? (
+                          <img 
+                            src={currentUser.photoURL} 
+                            alt="Profile" 
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          currentUser.name?.charAt(0)?.toUpperCase() || currentUser.email?.charAt(0)?.toUpperCase() || 'U'
+                        )}
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="text-white font-medium truncate">{currentUser.name || 'User'}</div>

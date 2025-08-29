@@ -15,7 +15,8 @@ export async function GET() {
     return NextResponse.json({
       uid: user.uid,
       email: user.email,
-      name: user.name
+      name: user.name,
+      photoURL: user.photoURL
     });
 
   } catch (error) {

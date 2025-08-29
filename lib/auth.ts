@@ -19,7 +19,8 @@ export async function getCurrentUser() {
     return {
       uid: decodedClaims.uid,
       email: decodedClaims.email,
-      name: userRecord.displayName || decodedClaims.name || 'User'  // Use displayName first
+      name: userRecord.displayName || decodedClaims.name || 'User',  // Use displayName first
+      photoURL: userRecord.photoURL || undefined
     };
   } catch (error) {
     console.error('Error verifying session:', error);

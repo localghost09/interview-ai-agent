@@ -9,6 +9,7 @@ interface UserProfileProps {
     uid: string;
     email: string | undefined;
     name: string;
+    photoURL?: string;
   } | null;
 }
 
@@ -80,8 +81,16 @@ const UserProfile = ({ user }: UserProfileProps) => {
         className="flex items-center space-x-2 p-2 rounded-full hover:bg-gray-700 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
       >
         {/* Avatar */}
-        <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-sm font-semibold">
-          {getInitials(user.name)}
+        <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-sm font-semibold overflow-hidden">
+          {user.photoURL ? (
+            <img 
+              src={user.photoURL} 
+              alt="Profile" 
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            getInitials(user.name)
+          )}
         </div>
         
         {/* Dropdown Arrow */}
@@ -103,8 +112,16 @@ const UserProfile = ({ user }: UserProfileProps) => {
           {/* User Info */}
           <div className="px-4 py-3 border-b border-gray-700">
             <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-semibold">
-                {getInitials(user.name)}
+              <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-semibold overflow-hidden">
+                {user.photoURL ? (
+                  <img 
+                    src={user.photoURL} 
+                    alt="Profile" 
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  getInitials(user.name)
+                )}
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium text-white truncate">

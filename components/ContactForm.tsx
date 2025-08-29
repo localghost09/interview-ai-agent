@@ -46,8 +46,7 @@ export default function ContactForm() {
           setFormData(prev => ({
             ...prev,
             email: user.email,
-            firstName: user.name?.split(' ')[0] || '',
-            lastName: user.name?.split(' ')[1] || '',
+            
           }));
         } else {
           // User is not authenticated, redirect to sign in

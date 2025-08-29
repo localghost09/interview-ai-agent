@@ -124,9 +124,9 @@ const InterviewForm = () => {
           onChange={(e) => setFormData(prev => ({ ...prev, level: e.target.value }))}
           className="mt-1 w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
         >
-          <option value="Junior">Junior (0-2 years)</option>
-          <option value="Mid">Mid-level (2-5 years)</option>
-          <option value="Senior">Senior (5+ years)</option>
+          <option value="Junior" className="text-black">Junior (0-2 years)</option>
+          <option value="Mid" className="text-black">Mid-level (2-5 years)</option>
+          <option value="Senior" className="text-black">Senior (5+ years)</option>
         </select>
       </div>
 
@@ -138,9 +138,9 @@ const InterviewForm = () => {
           onChange={(e) => setFormData(prev => ({ ...prev, type: e.target.value }))}
           className="mt-1 w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
         >
-          <option value="Technical">Technical</option>
-          <option value="Behavioral">Behavioral</option>
-          <option value="Mixed">Mixed</option>
+          <option value="Technical" className="text-black">Technical</option>
+          <option value="Behavioral" className="text-black">Behavioral</option>
+          <option value="Mixed" className="text-black">Mixed</option>
         </select>
       </div>
 

@@ -61,24 +61,24 @@ const InterviewQuestions = ({ interview }: Props) => {
       </div>
 
       {/* Instructions */}
-      <div className="bg-blue-50 rounded-lg p-6 mb-6">
-        <h2 className="text-lg font-semibold text-blue-900 mb-3">
+      <div className="bg-blue-50 rounded-lg p-6 mb-6 ">
+        <h2 className="text-lg font-semibold text-blue-900 mb-3 ">
           Interview Instructions
         </h2>
         <ul className="space-y-2 text-blue-800">
-          <li className="flex items-start">
+          <li className="flex items-start text-black">
             <span className="w-2 h-2 bg-blue-500 rounded-full mt-2 mr-3 flex-shrink-0"></span>
             This interview will contain {interview.questions.length} questions
           </li>
-          <li className="flex items-start">
+          <li className="flex items-start text-black">
             <span className="w-2 h-2 bg-blue-500 rounded-full mt-2 mr-3 flex-shrink-0"></span>
             You can take your time to answer each question thoughtfully
           </li>
-          <li className="flex items-start">
+          <li className="flex items-start text-black">
             <span className="w-2 h-2 bg-blue-500 rounded-full mt-2 mr-3 flex-shrink-0"></span>
             The AI will provide feedback on your responses after completion
           </li>
-          <li className="flex items-start">
+          <li className="flex items-start text-black">
             <span className="w-2 h-2 bg-blue-500 rounded-full mt-2 mr-3 flex-shrink-0"></span>
             You can use voice or text to respond to questions
           </li>

@@ -12,10 +12,14 @@ export async function getCurrentUser() {
 
   try {
     const decodedClaims = await auth.verifySessionCookie(sessionCookie.value, true);
+    
+    // Get the user record to access displayName
+    const userRecord = await auth.getUser(decodedClaims.uid);
+    
     return {
       uid: decodedClaims.uid,
       email: decodedClaims.email,
-      name: decodedClaims.name || decodedClaims.email
+      name: userRecord.displayName || decodedClaims.name || 'User'  // Use displayName first
     };
   } catch (error) {
     console.error('Error verifying session:', error);

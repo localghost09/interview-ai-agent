@@ -131,3 +131,28 @@ export async function logout() {
         };
     }
 }
+
+export async function updateUserDisplayName(uid: string, displayName: string) {
+    try {
+        // Update the user's display name in Firebase Auth
+        await auth.updateUser(uid, {
+            displayName: displayName
+        });
+
+        // Also update in Firestore for consistency
+        await db.collection('users').doc(uid).update({
+            name: displayName
+        });
+
+        return {
+            success: true,
+            message: 'Profile updated successfully'
+        };
+    } catch (error) {
+        console.error('Error updating user display name:', error);
+        return {
+            success: false,
+            message: 'Failed to update profile'
+        };
+    }
+}

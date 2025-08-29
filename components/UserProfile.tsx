@@ -110,11 +110,8 @@ const UserProfile = ({ user }: UserProfileProps) => {
                 <p className="text-sm font-medium text-white truncate">
                   {user.name}
                 </p>
-                <p className="text-xs text-gray-400 truncate">
-                  {user.email || 'No email provided'}
-                </p>
               </div>
-            </div>
+            </div> 
           </div>
 
           {/* Menu Items */}

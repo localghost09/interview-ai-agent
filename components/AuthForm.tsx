@@ -17,7 +17,7 @@ import FormField from "@/components/FormField";
 import EmailVerification from "@/components/EmailVerification";
 import PasswordReset from "@/components/PasswordReset";
 import { useRouter, useSearchParams } from "next/navigation";
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword, sendEmailVerification } from "firebase/auth"
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword, sendEmailVerification, updateProfile } from "firebase/auth"
 import { auth } from "@/firebase/client";
 import {signIn , signUp} from "@/lib/actions/auth.action";
 import { emailVerificationConfig, fallbackEmailVerificationConfig } from "@/lib/emailConfig";
@@ -72,6 +72,13 @@ const AuthForm = ({ type }:{type: FormType}) => {
           const { name,email,password} = values;
 
           const userCredentials = await createUserWithEmailAndPassword(auth,email,password);
+
+          // Update user profile with their name
+          if (name) {
+            await updateProfile(userCredentials.user, {
+              displayName: name
+            });
+          }
 
           // Send email verification - try simple approach first
           try {

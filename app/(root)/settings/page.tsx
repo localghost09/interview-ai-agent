@@ -1,8 +1,11 @@
 "use client";
 
-import { Bell, Shield, Eye, Palette } from "lucide-react";
+import { Bell, Shield, Eye, Palette, User, Save } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useTheme } from "next-themes";
+import { updateProfile } from 'firebase/auth';
+import { auth } from '@/firebase/client';
+import { toast } from 'sonner';
 
 export default function SettingsPage() {
   const { theme, setTheme } = useTheme();
@@ -11,6 +14,11 @@ export default function SettingsPage() {
   const [marketingEmails, setMarketingEmails] = useState(false);
   const [autoSave, setAutoSave] = useState(true);
   const [mounted, setMounted] = useState(false);
+  
+  // Profile states
+  const [currentUser, setCurrentUser] = useState<{uid: string; email: string; name: string} | null>(null);
+  const [displayName, setDisplayName] = useState('');
+  const [isUpdatingProfile, setIsUpdatingProfile] = useState(false);
 
   // Load settings from localStorage on component mount
   useEffect(() => {
@@ -24,7 +32,55 @@ export default function SettingsPage() {
     if (savedInterviewReminders !== null) setInterviewReminders(JSON.parse(savedInterviewReminders));
     if (savedMarketingEmails !== null) setMarketingEmails(JSON.parse(savedMarketingEmails));
     if (savedAutoSave !== null) setAutoSave(JSON.parse(savedAutoSave));
+
+    // Load current user
+    getCurrentUser();
   }, []);
+
+  const getCurrentUser = async () => {
+    try {
+      const response = await fetch('/api/auth/current-user');
+      if (response.ok) {
+        const user = await response.json();
+        setCurrentUser(user);
+        setDisplayName(user.name);
+      }
+    } catch (error) {
+      console.error('Error getting current user:', error);
+    }
+  };
+
+  const handleProfileUpdate = async () => {
+    if (!displayName.trim()) {
+      toast.error('Please enter a valid name');
+      return;
+    }
+
+    setIsUpdatingProfile(true);
+    try {
+      const user = auth.currentUser;
+      if (!user) {
+        toast.error('No user logged in');
+        return;
+      }
+
+      await updateProfile(user, {
+        displayName: displayName.trim()
+      });
+
+      // Update the current user state
+      if (currentUser) {
+        setCurrentUser({ ...currentUser, name: displayName.trim() });
+      }
+
+      toast.success('Profile updated successfully! Please refresh the page to see changes.');
+    } catch (error) {
+      console.error('Profile update error:', error);
+      toast.error('Failed to update profile');
+    } finally {
+      setIsUpdatingProfile(false);
+    }
+  };
 
   const handleToggle = (setter: (value: boolean) => void, currentValue: boolean, storageKey: string) => {
     const newValue = !currentValue;
@@ -54,6 +110,47 @@ export default function SettingsPage() {
 
       {/* Settings Content */}
       <div className="max-w-4xl mx-auto space-y-8">
+        {/* Profile Settings */}
+        <div className="bg-gray-800/50 dark:bg-gray-800/50 bg-white/90 border dark:border-transparent border-gray-200 rounded-2xl p-8 shadow-lg">
+          <div className="flex items-center gap-3 mb-6">
+            <User className="w-6 h-6 text-green-400" />
+            <h2 className="text-2xl font-bold text-white dark:text-white text-gray-900">Profile</h2>
+          </div>
+          
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="flex-1">
+                <h3 className="text-white dark:text-white text-gray-900 font-medium">Display Name</h3>
+                <p className="text-gray-400 dark:text-gray-400 text-gray-600 text-sm">This will be shown in your profile and navigation</p>
+              </div>
+            </div>
+            
+            <div className="flex gap-3">
+              <input
+                type="text"
+                value={displayName}
+                onChange={(e) => setDisplayName(e.target.value)}
+                placeholder="Enter your full name"
+                className="flex-1 bg-gray-700 dark:bg-gray-700 bg-gray-100 text-white dark:text-white text-gray-900 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+              <button
+                onClick={handleProfileUpdate}
+                disabled={isUpdatingProfile || !displayName.trim()}
+                className="bg-green-600 hover:bg-green-700 disabled:bg-gray-600 text-white px-6 py-2 rounded-lg flex items-center gap-2 transition-colors"
+              >
+                <Save className="w-4 h-4" />
+                {isUpdatingProfile ? 'Updating...' : 'Update'}
+              </button>
+            </div>
+            
+            {currentUser && (
+              <div className="text-sm text-gray-400 dark:text-gray-400 text-gray-600">
+                Current email: {currentUser.email}
+              </div>
+            )}
+          </div>
+        </div>
+
         {/* Notifications */}
         <div className="bg-gray-800/50 dark:bg-gray-800/50 bg-white/90 border dark:border-transparent border-gray-200 rounded-2xl p-8 shadow-lg">
           <div className="flex items-center gap-3 mb-6">

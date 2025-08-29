@@ -138,11 +138,11 @@ export default function Navigation() {
                     <div className="p-4 border-b border-gray-700">
                       <div className="flex items-center gap-3">
                         <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center text-white font-medium text-lg">
-                          {currentUser.name?.charAt(0)?.toUpperCase() || currentUser.email?.charAt(0)?.toUpperCase() || 'U'}
+                          {currentUser.name?.charAt(0)?.toUpperCase() || 'U'}
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="text-white font-medium truncate">{currentUser.name || 'User'}</div>
-                          <div className="text-gray-400 text-sm truncate">{currentUser.email}</div>
+                          
                         </div>
                       </div>
                     </div>
@@ -260,7 +260,7 @@ export default function Navigation() {
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="text-white font-medium truncate">{currentUser.name || 'User'}</div>
-                        <div className="text-gray-400 text-xs truncate">{currentUser.email}</div>
+                        
                       </div>
                     </div>
                   </div>

@@ -186,11 +186,9 @@ export default function ProfilePage() {
 
       toast.success('Profile updated successfully!');
 
-      // Force page refresh after a short delay to ensure changes are reflected
-      setTimeout(() => {
-        window.location.reload();
-      }, 1500);
-
+      // Instead of reloading the page, just update the local state
+      // The getCurrentUser() call and profileUpdated event should handle the updates
+      
     } catch (error) {
       console.error('Error updating profile:', error);
       const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';

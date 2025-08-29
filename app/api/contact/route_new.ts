@@ -76,9 +76,9 @@ export async function POST(request: NextRequest) {
       console.log('📧 Sending email using enhanced email service...');
       
       const emailResult = await emailService.sendEmail({
-        to: 'localghost678@gmail.com', // Send to business support email
+        to: 'localghost678@gmail.com',
         subject: `[AI MockPrep Contact] ${subject}`,
-        from: 'Aimockprep@resend.dev', // Use Resend's default verified domain
+        from: process.env.GMAIL_USER || 'noreply@aimockprep.com',
         fromName: 'AI MockPrep Contact',
         html: `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
@@ -143,7 +143,7 @@ Reply directly to this email to respond to ${firstName}.
       if (emailResult.success) {
         console.log(`✅ Email sent successfully via ${emailResult.provider}:`, {
           messageId: emailResult.messageId,
-          to: 'localghost678@gmail.com', // Business support email
+          to: 'localghost678@gmail.com',
           subject: `[AI MockPrep Contact] ${subject}`,
         });
 
@@ -158,27 +158,14 @@ Reply directly to this email to respond to ${firstName}.
       } else {
         console.error('❌ All email services failed:', emailResult.error);
         
-        // Log the message for manual review even if email fails
-        console.log('📝 CONTACT MESSAGE LOGGED (Email failed):', {
-          name: `${firstName} ${lastName}`,
-          email: email,
-          subject: subject,
-          message: message,
-          newsletter: newsletter,
-          userId: currentUser.uid,
-          timestamp: new Date().toISOString(),
-          provider: emailResult.provider,
-          error: emailResult.error
-        });
-        
         return NextResponse.json({
-          success: true, // Still return success so user doesn't get error
-          message: 'Message received! We\'ll get back to you soon.',
-          timestamp: new Date().toISOString(),
+          success: false,
+          message: 'Failed to send email - all email services are currently unavailable',
+          error: emailResult.error,
+          provider: emailResult.provider,
           emailSent: false,
-          note: 'Message logged for manual review',
-          fallbackMessage: 'Email service temporarily unavailable, but your message has been recorded.'
-        });
+          fallbackMessage: 'Your message has been logged. We will respond manually if needed.'
+        }, { status: 500 });
       }
 
     } catch (emailError) {

@@ -33,7 +33,7 @@ export async function POST(request: NextRequest) {
     // Store profile data (including photoURL) in Firestore
     if (db) {
       const userRef = db.collection('users').doc(uid);
-      const profileData: { displayName?: string; photoURL?: string; updatedAt: Date } = {
+      const profileData: { displayName?: string; photoURL?: string | null; updatedAt: Date } = {
         updatedAt: new Date()
       };
 
@@ -42,15 +42,21 @@ export async function POST(request: NextRequest) {
       }
 
       if (photoURL !== undefined) {
-        // Check photoURL size before storing
-        const photoSizeInBytes = (photoURL.length * 3) / 4;
-        if (photoSizeInBytes > 500000) { // 500KB limit
-          return NextResponse.json(
-            { error: 'Profile image is too large. Please use a smaller image.' },
-            { status: 400 }
-          );
+        // Check if photoURL is null or empty, handle accordingly
+        if (photoURL === null || photoURL === '') {
+          // User is removing their profile photo
+          profileData.photoURL = null;
+        } else {
+          // Check photoURL size before storing
+          const photoSizeInBytes = (photoURL.length * 3) / 4;
+          if (photoSizeInBytes > 500000) { // 500KB limit
+            return NextResponse.json(
+              { error: 'Profile image is too large. Please use a smaller image.' },
+              { status: 400 }
+            );
+          }
+          profileData.photoURL = photoURL;
         }
-        profileData.photoURL = photoURL;
       }
 
       await userRef.set(profileData, { merge: true });

@@ -237,7 +237,7 @@ export default function ProfilePage() {
         throw new Error(errorData.error || 'Failed to change password');
       }
 
-      toast.success('Password changed successfully! You will be signed out for security.');
+      toast.success('Password changed successfully! SignIn again.');
       
       // Clear form and close modal
       setCurrentPassword('');

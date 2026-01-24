@@ -1,7 +1,75 @@
-import { GoogleGenerativeAI } from '@google/generative-ai';
+/*
+  Replaced Gemini client usage with Hugging Face Inference API (Mistral recommended) so
+  the app can use free / credit-friendly models for question generation and feedback.
 
-// Initialize Gemini AI
-const genAI = new GoogleGenerativeAI(process.env.GOOGLE_GEMINI_API_KEY || '');
+  Environment variables used:
+  - HUGGINGFACE_API_KEY: required to call HF Inference
+  - HUGGINGFACE_MODEL: optional, default 'mistralai/Mistral-7B-Instruct'
+
+  The functions below keep the previous exported names so other modules don't need changes.
+*/
+
+const HF_API_KEY = process.env.HUGGINGFACE_API_KEY || process.env.NEXT_PUBLIC_HUGGINGFACE_API_KEY || '';
+const HF_MODEL = process.env.HUGGINGFACE_MODEL || 'mistralai/Mistral-7B-Instruct';
+
+async function callHfModel(prompt: string, model: string = HF_MODEL): Promise<string | null> {
+  if (!HF_API_KEY) {
+    console.warn('Hugging Face API key not configured (HUGGINGFACE_API_KEY).');
+    return null;
+  }
+
+  try {
+    const url = `https://api-inference.huggingface.co/models/${encodeURIComponent(model)}`;
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${HF_API_KEY}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        inputs: prompt,
+        options: { wait_for_model: true },
+        parameters: { max_new_tokens: 512 }
+      })
+    });
+
+    if (!res.ok) {
+      const txt = await res.text().catch(() => '');
+      console.warn(`HF model ${model} returned ${res.status}: ${res.statusText} - ${txt}`);
+      return null;
+    }
+
+    const data = await res.json();
+
+    // Handle different HF response shapes
+    // - array with generated_text: [{generated_text: '...'}]
+    // - object with generated_text: {generated_text: '...'}
+    // - string
+    if (Array.isArray(data) && data[0] && typeof data[0].generated_text === 'string') {
+      return data[0].generated_text;
+    }
+
+    if (data && typeof data.generated_text === 'string') {
+      return data.generated_text;
+    }
+
+    // Some models return a plain string
+    if (typeof data === 'string') {
+      return data;
+    }
+
+    // Fallback: inspect common fields
+    if (Array.isArray(data) && data[0] && typeof data[0].text === 'string') {
+      return data[0].text;
+    }
+
+    // Last resort: stringify
+    return JSON.stringify(data);
+  } catch (err) {
+    console.error('Hugging Face model call failed:', err);
+    return null;
+  }
+}
 
 export const generateInterviewQuestions = async (
   role: string,
@@ -10,7 +78,6 @@ export const generateInterviewQuestions = async (
   type: string = 'Technical'
 ): Promise<string[]> => {
   try {
-    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
 
     const prompt = `
 Generate 8 diverse and challenging interview questions for a ${level} level ${role} position.
@@ -40,26 +107,24 @@ Example format:
 ...
 `;
 
-    const result = await model.generateContent(prompt);
-    const response = await result.response;
-    const text = response.text();
+    const text = await callHfModel(prompt);
 
-    // Parse the response to extract questions
-    const questions = text
+    // Parse the response to extract questions (handle null text safely)
+    const questions = (text ?? '')
       .split('\n')
-      .filter(line => line.trim().match(/^\d+\./))
-      .map(line => line.replace(/^\d+\.\s*/, '').trim())
-      .filter(question => question.length > 0);
+      .filter((line: string) => line.trim().match(/^\d+\./))
+      .map((line: string) => line.replace(/^\d+\.\s*/, '').trim())
+      .filter((question: string) => question.length > 0);
 
     // Fallback to static questions if API fails or returns insufficient questions
     if (questions.length < 5) {
-      console.warn('Gemini returned insufficient questions, using fallback');
+  console.warn('HF returned insufficient questions or remote generation failed, using fallback');
       return generateFallbackQuestions(role, level, techStack);
     }
 
     return questions.slice(0, 8); // Return max 8 questions
   } catch (error) {
-    console.error('Error generating questions with Gemini:', error);
+  console.error('Error generating questions with HF:', error);
     // Fallback to static questions if API fails
     return generateFallbackQuestions(role, level, techStack);
   }
@@ -122,8 +187,6 @@ export const generateFeedbackWithGemini = async (
   detailedFeedback: { question: string; response: string; score: number; feedback: string; }[];
 }> => {
   try {
-    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
-
     const questionResponsePairs = questions.map((q, i) => 
       `Q${i + 1}: ${q}\nA${i + 1}: ${responses[i] || 'No response provided'}\n`
     ).join('\n');
@@ -159,25 +222,29 @@ Evaluation Criteria:
 Be constructive and specific in your feedback. Highlight both strengths and areas for improvement.
 `;
 
-    const result = await model.generateContent(prompt);
-    const response = await result.response;
-    const text = response.text();
+    // Call the Hugging Face model for feedback generation
+    const text = await callHfModel(prompt);
+
+    if (!text) {
+      console.warn('HF feedback generation failed or returned empty - using fallback feedback');
+      return generateFallbackFeedback(questions, responses);
+    }
 
     try {
       // Extract JSON from the response
-      const jsonMatch = text.match(/\{[\s\S]*\}/);
+  const jsonMatch = text.match(/\{[\s\S]*\}/);
       if (jsonMatch) {
         const feedbackData = JSON.parse(jsonMatch[0]);
         return feedbackData;
       }
     } catch (parseError) {
-      console.error('Error parsing Gemini feedback response:', parseError);
+      console.error('Error parsing HF feedback response:', parseError);
     }
 
     // Fallback if JSON parsing fails
     return generateFallbackFeedback(questions, responses);
   } catch (error) {
-    console.error('Error generating feedback with Gemini:', error);
+    console.error('Error generating feedback with HF:', error);
     return generateFallbackFeedback(questions, responses);
   }
 };

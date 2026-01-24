@@ -141,6 +141,7 @@ const InterviewForm = () => {
           <option value="Technical" className="text-black">Technical</option>
           <option value="Behavioral" className="text-black">Behavioral</option>
           <option value="Mixed" className="text-black">Mixed</option>
+          <option value= "Coding"  className="text-black">Codeing</option>
         </select>
       </div>
 

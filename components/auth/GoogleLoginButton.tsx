@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 import { auth } from "@/firebase/client";
 import { signIn, signUp } from "@/lib/actions/auth.action";
@@ -112,10 +113,12 @@ type Props = {
     >
     {/* Google Icon */}
     <span className="flex items-center justify-center w-8 h-8 rounded-full bg-white shadow-sm">
-        <img
+        <Image
             src="/google.png"
             alt="Google"
-            className=""
+            width={24}
+            height={24}
+            className="w-6 h-6"
         />
     </span>
 

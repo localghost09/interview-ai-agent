@@ -72,10 +72,11 @@ type Props = {
         toast.success("Signed in with Google 🎉");
         onSuccess?.();
 
-        } catch (error: any) {
+        } catch (error: unknown) {
         console.error("Google login error:", error);
+        const firebaseError = error as { code?: string };
 
-        if (error.code === "auth/popup-closed-by-user") {
+        if (firebaseError.code === "auth/popup-closed-by-user") {
             toast.info("Login cancelled");
         } else {
             toast.error("Google sign-in failed");

@@ -46,8 +46,9 @@ const schema = z.object({
         localStorage.setItem(`pendingUser_${cred.user.uid}`, name);
         toast.success("Account created! Verify your email.");
         onVerificationRequired(email);
-        } catch (error: any) {
-        toast.error(error.message || "Signup failed");
+        } catch (error: unknown) {
+        const errorMessage = error instanceof Error ? error.message : "Signup failed";
+        toast.error(errorMessage);
         }
     }
 

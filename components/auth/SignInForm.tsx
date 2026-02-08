@@ -55,8 +55,9 @@ const schema = z.object({
 
         toast.success("Signed in successfully!");
         window.location.href = "/";
-        } catch (error: any) {
-        toast.error(error.message || "Sign in failed");
+        } catch (error: unknown) {
+        const errorMessage = error instanceof Error ? error.message : "Sign in failed";
+        toast.error(errorMessage);
         }
     }
 

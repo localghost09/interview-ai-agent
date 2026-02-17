@@ -1,7 +1,7 @@
 'use server';
 
 import { db } from "@/firebase/admin";
-import { generateQuestions } from "@/lib/utils";
+import { generateQuestions } from "@/lib/serverQuestions";
 
 export async function createInterview(params: {
   userId: string;

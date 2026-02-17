@@ -105,13 +105,3 @@ export const getRandomIconPair = () => {
     secondIcon: shuffled[1]
   };
 };
-
-export const generateQuestions = async (
-  role: string, 
-  level: string, 
-  techstack: string[],
-  type: string = 'Technical'
-): Promise<string[]> => {
-  // Use Gemini AI to generate dynamic and versatile interview questions
-  return await generateInterviewQuestions(role, level, techstack, type);
-};

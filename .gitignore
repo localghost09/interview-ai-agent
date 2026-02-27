@@ -49,6 +49,5 @@ firebase-debug.*.log*
 *-firebase-adminsdk-*.json
 firebase-service-account.json
 
-.vercel
-
-.vercel
+# Claude temp files
+tmpclaude-*

@@ -2,45 +2,17 @@
 
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { toast } from 'sonner';
-import { ArrowLeft, Mic, Languages, Type, Shuffle, MessageSquareQuote } from 'lucide-react';
+import { ArrowLeft, Mic, Type, Shuffle, MessageSquareQuote, Filter } from 'lucide-react';
 import AudioRecorder from '@/components/speech/AudioRecorder';
 import SpeechDashboard from '@/components/speech/SpeechDashboard';
+import {
+  PRACTICE_QUESTIONS,
+  CATEGORY_LABELS,
+  getRandomQuestion,
+  type QuestionCategory,
+} from '@/lib/speech/practiceQuestions';
 
-type LanguageOption = 'en-US' | 'hi-IN' | 'hinglish';
-
-const LANGUAGE_CONFIG: { key: LanguageOption; label: string; code: 'en-US' | 'hi-IN' }[] = [
-  { key: 'en-US', label: 'English', code: 'en-US' },
-  { key: 'hi-IN', label: 'Hindi', code: 'hi-IN' },
-  { key: 'hinglish', label: 'Hinglish', code: 'hi-IN' },
-];
-
-const PRACTICE_QUESTIONS = [
-  'Tell me about yourself and your professional background.',
-  'What is your greatest strength, and how has it helped you in your career?',
-  'Describe a challenging project you worked on. How did you handle it?',
-  'Why are you interested in this role and what excites you about it?',
-  'How do you handle tight deadlines and pressure at work?',
-  'Describe a time you had a disagreement with a teammate. How did you resolve it?',
-  'What motivates you to do your best work every day?',
-  'Where do you see yourself in five years?',
-  'Tell me about a time you failed. What did you learn from it?',
-  'How do you prioritize tasks when you have multiple deadlines?',
-  'Explain a complex technical concept to someone non-technical.',
-  'What is your approach to learning a new technology or framework?',
-  'Describe a situation where you took initiative beyond your role.',
-  'How do you stay updated with the latest industry trends?',
-  'Tell me about a time you received constructive criticism. How did you respond?',
-  'What makes you a good fit for a collaborative team environment?',
-  'Describe your ideal work environment and why it suits you.',
-  'How do you approach debugging a difficult issue in production?',
-  'Tell me about a time you had to explain a technical decision to stakeholders.',
-  'What is one thing you would change about your last job and why?',
-];
-
-function getRandomQuestion(exclude?: string): string {
-  const filtered = exclude ? PRACTICE_QUESTIONS.filter((q) => q !== exclude) : PRACTICE_QUESTIONS;
-  return filtered[Math.floor(Math.random() * filtered.length)];
-}
+const CATEGORIES = Object.keys(CATEGORY_LABELS) as QuestionCategory[];
 
 /**
  * Orchestrates the speech analysis flow: record → analyze → display results.
@@ -49,11 +21,11 @@ function getRandomQuestion(exclude?: string): string {
 export default function SpeechAnalyzer() {
   const [view, setView] = useState<'input' | 'analyzing' | 'dashboard'>('input');
   const [result, setResult] = useState<SpeechAnalysisResponse | null>(null);
-  const [language, setLanguage] = useState<LanguageOption>('en-US');
   const [isRecording, setIsRecording] = useState(false);
   const [liveTranscript, setLiveTranscript] = useState('');
   const [interimText, setInterimText] = useState('');
-  const [currentQuestion, setCurrentQuestion] = useState(PRACTICE_QUESTIONS[0]);
+  const [category, setCategory] = useState<QuestionCategory>('all');
+  const [currentQuestion, setCurrentQuestion] = useState(PRACTICE_QUESTIONS[0].question);
 
   const transcriptContainerRef = useRef<HTMLDivElement | null>(null);
 
@@ -100,7 +72,10 @@ export default function SpeechAnalyzer() {
     }
   }, []);
 
-  const selectedConfig = LANGUAGE_CONFIG.find((l) => l.key === language)!;
+  const handleCategoryChange = (newCategory: QuestionCategory) => {
+    setCategory(newCategory);
+    setCurrentQuestion(getRandomQuestion(currentQuestion, newCategory));
+  };
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
@@ -121,22 +96,22 @@ export default function SpeechAnalyzer() {
             </p>
           </div>
 
-          {/* Language Selector */}
+          {/* Category Filter */}
           <div className="flex justify-center mb-6">
-            <div className="inline-flex items-center gap-2 p-1 bg-gray-100 dark:bg-gray-800 rounded-xl">
-              <Languages className="w-4 h-4 text-gray-500 dark:text-gray-400 ml-2" />
-              {LANGUAGE_CONFIG.map((lang) => (
+            <div className="inline-flex items-center gap-1.5 p-1 bg-gray-100 dark:bg-gray-800 rounded-xl flex-wrap justify-center max-w-2xl">
+              <Filter className="w-3.5 h-3.5 text-gray-400 ml-2 shrink-0" />
+              {CATEGORIES.map((cat) => (
                 <button
-                  key={lang.key}
-                  onClick={() => setLanguage(lang.key)}
+                  key={cat}
+                  onClick={() => handleCategoryChange(cat)}
                   disabled={isRecording}
-                  className={`px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 ${
-                    language === lang.key
+                  className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-all duration-200 whitespace-nowrap ${
+                    category === cat
                       ? 'bg-blue-600 text-white shadow-sm'
                       : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-200 dark:hover:bg-gray-700'
                   } ${isRecording ? 'opacity-50 cursor-not-allowed' : ''}`}
                 >
-                  {lang.label}
+                  {CATEGORY_LABELS[cat]}
                 </button>
               ))}
             </div>
@@ -158,7 +133,7 @@ export default function SpeechAnalyzer() {
                   </div>
                 </div>
                 <button
-                  onClick={() => setCurrentQuestion(getRandomQuestion(currentQuestion))}
+                  onClick={() => setCurrentQuestion(getRandomQuestion(currentQuestion, category))}
                   disabled={isRecording}
                   className={`flex-shrink-0 p-2 rounded-lg text-gray-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:text-blue-400 dark:hover:bg-blue-900/20 transition-colors ${
                     isRecording ? 'opacity-50 cursor-not-allowed' : ''
@@ -183,8 +158,8 @@ export default function SpeechAnalyzer() {
                 onAnalysisComplete={handleAnalysisComplete}
                 onError={handleError}
                 onStateChange={handleStateChange}
-                language={selectedConfig.code}
                 onTranscriptUpdate={handleTranscriptUpdate}
+                question={currentQuestion}
               />
             </div>
 
@@ -198,9 +173,6 @@ export default function SpeechAnalyzer() {
                       Live Transcript
                     </h3>
                   </div>
-                  <span className="text-xs px-2 py-1 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 font-medium">
-                    {selectedConfig.label}
-                  </span>
                 </div>
 
                 <div ref={transcriptContainerRef} className="flex-1 min-h-[200px] max-h-[300px] overflow-y-auto rounded-lg bg-gray-50 dark:bg-gray-800/50 p-4">

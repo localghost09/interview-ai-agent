@@ -6,11 +6,15 @@ const API_URL = '/api/speech/analyze';
  */
 export const analyzeSpeech = async (
   audioBlob: Blob,
-  confidenceScore: number
+  speechEnergyScore: number,
+  question?: string
 ): Promise<SpeechAnalysisResponse> => {
   const formData = new FormData();
   formData.append('audio', audioBlob, 'recording.webm');
-  formData.append('confidenceScore', String(confidenceScore));
+  formData.append('confidenceScore', String(speechEnergyScore));
+  if (question) {
+    formData.append('question', question);
+  }
 
   const response = await fetch(API_URL, {
     method: 'POST',

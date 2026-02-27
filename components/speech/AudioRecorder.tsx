@@ -27,26 +27,26 @@ interface SpeechRecognitionResultEvent extends Event {
   };
 }
 
-/** RMS threshold (0-1 scale) above which speech is considered confident. */
-const CONFIDENCE_THRESHOLD = 0.03;
+/** RMS threshold (0-1 scale) above which speech activity is detected. */
+const SPEECH_ENERGY_THRESHOLD = 0.03;
 
 interface AudioRecorderProps {
   onAnalysisComplete: (result: SpeechAnalysisResponse) => void;
   onError: (error: string) => void;
   onStateChange?: (state: 'idle' | 'recording' | 'analyzing') => void;
-  language?: 'en-US' | 'hi-IN';
   onTranscriptUpdate?: (transcript: string, isInterim: boolean) => void;
+  question?: string;
 }
 
 /**
- * Records microphone audio, tracks real-time confidence via RMS volume,
+ * Records microphone audio, tracks real-time speech energy via RMS volume,
  * and submits the recording to the speech analysis API.
  */
-export default function AudioRecorder({ onAnalysisComplete, onError, onStateChange, language = 'en-US', onTranscriptUpdate }: AudioRecorderProps) {
+export default function AudioRecorder({ onAnalysisComplete, onError, onStateChange, onTranscriptUpdate, question }: AudioRecorderProps) {
   const [state, setState] = useState<'idle' | 'recording' | 'analyzing'>('idle');
   const [duration, setDuration] = useState(0);
   const [volumeLevel, setVolumeLevel] = useState(0);
-  const [confidenceScore, setConfidenceScore] = useState(0);
+  const [speechEnergyScore, setSpeechEnergyScore] = useState(0);
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
@@ -57,7 +57,7 @@ export default function AudioRecorder({ onAnalysisComplete, onError, onStateChan
   const chunksRef = useRef<Blob[]>([]);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  // Confidence tracking refs
+  // Speech energy tracking refs
   const sampleCountRef = useRef(0);
   const aboveThresholdCountRef = useRef(0);
   const startTimeRef = useRef(0);
@@ -91,16 +91,16 @@ export default function AudioRecorder({ onAnalysisComplete, onError, onStateChan
 
     setVolumeLevel(Math.min(rms * 5, 1)); // Scale for visual display
 
-    // Track confidence
+    // Track speech energy
     sampleCountRef.current++;
-    if (rms > CONFIDENCE_THRESHOLD) {
+    if (rms > SPEECH_ENERGY_THRESHOLD) {
       aboveThresholdCountRef.current++;
     }
 
     const ratio = sampleCountRef.current > 0
       ? aboveThresholdCountRef.current / sampleCountRef.current
       : 0;
-    setConfidenceScore(Math.round(ratio * 100));
+    setSpeechEnergyScore(Math.round(ratio * 100));
 
     animationFrameRef.current = requestAnimationFrame(sampleVolume);
   }, []);
@@ -152,7 +152,7 @@ export default function AudioRecorder({ onAnalysisComplete, onError, onStateChan
       aboveThresholdCountRef.current = 0;
       setDuration(0);
       setVolumeLevel(0);
-      setConfidenceScore(0);
+      setSpeechEnergyScore(0);
 
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       streamRef.current = stream;
@@ -197,7 +197,7 @@ export default function AudioRecorder({ onAnalysisComplete, onError, onStateChan
           const recognition = new SpeechRecognitionCtor();
           recognition.continuous = true;
           recognition.interimResults = true;
-          recognition.lang = language;
+          recognition.lang = 'en-US';
 
           recognition.onresult = (event: SpeechRecognitionResultEvent) => {
             let finalTranscript = '';
@@ -272,7 +272,7 @@ export default function AudioRecorder({ onAnalysisComplete, onError, onStateChan
       recognitionRef.current = null;
     }
 
-    const finalConfidence = confidenceScore;
+    const finalEnergy = speechEnergyScore;
 
     mediaRecorderRef.current.onstop = async () => {
       const audioBlob = new Blob(chunksRef.current, { type: 'audio/webm' });
@@ -287,7 +287,7 @@ export default function AudioRecorder({ onAnalysisComplete, onError, onStateChan
       updateState('analyzing');
 
       try {
-        const result = await analyzeSpeech(audioBlob, finalConfidence);
+        const result = await analyzeSpeech(audioBlob, finalEnergy, question);
         onAnalysisComplete(result);
       } catch (err) {
         onError(err instanceof Error ? err.message : 'Speech analysis failed');
@@ -305,8 +305,8 @@ export default function AudioRecorder({ onAnalysisComplete, onError, onStateChan
     return `${m}:${s}`;
   };
 
-  const confidenceLabel = confidenceScore >= 70 ? 'High Confidence' : confidenceScore >= 40 ? 'Moderate' : 'Low';
-  const confidenceColor = confidenceScore >= 70 ? 'text-green-500' : confidenceScore >= 40 ? 'text-yellow-500' : 'text-red-500';
+  const energyLabel = speechEnergyScore >= 70 ? 'High Activity' : speechEnergyScore >= 40 ? 'Moderate' : 'Low';
+  const energyColor = speechEnergyScore >= 70 ? 'text-green-500' : speechEnergyScore >= 40 ? 'text-yellow-500' : 'text-red-500';
 
   return (
     <div className="flex flex-col items-center gap-6">
@@ -367,22 +367,22 @@ export default function AudioRecorder({ onAnalysisComplete, onError, onStateChan
             </div>
           </div>
 
-          {/* Confidence indicator */}
+          {/* Speech energy indicator */}
           <div className="space-y-1">
             <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400">
-              <span>Confidence</span>
-              <span className={confidenceColor}>{confidenceLabel} ({confidenceScore}%)</span>
+              <span>Speech Energy</span>
+              <span className={energyColor}>{energyLabel} ({speechEnergyScore}%)</span>
             </div>
             <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
               <div
                 className={`h-full rounded-full transition-all duration-300 ${
-                  confidenceScore >= 70
+                  speechEnergyScore >= 70
                     ? 'bg-gradient-to-r from-green-400 to-green-600'
-                    : confidenceScore >= 40
+                    : speechEnergyScore >= 40
                       ? 'bg-gradient-to-r from-yellow-400 to-yellow-600'
                       : 'bg-gradient-to-r from-red-400 to-red-600'
                 }`}
-                style={{ width: `${confidenceScore}%` }}
+                style={{ width: `${speechEnergyScore}%` }}
               />
             </div>
           </div>

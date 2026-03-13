@@ -149,8 +149,8 @@ const page = async () => {
                 </Link>
               </Button>
               <Button asChild className="btn-secondary !px-7 !py-3 !text-base max-sm:w-full">
-                <Link href={user ? '/resume' : '/sign-in'}>
-                  {user ? 'Optimize Resume' : 'Learn More'}
+                <Link href={user ? '/resume-builder' : '/sign-in'}>
+                  {user ? 'Build Resume' : 'Learn More'}
                 </Link>
               </Button>
             </div>
@@ -272,8 +272,8 @@ const page = async () => {
               </Link>
             </Button>
             <Button asChild className="btn-secondary !px-8 !py-3 !text-base max-sm:w-full">
-              <Link href={user ? '/resume' : '/sign-in'}>
-                {user ? 'Optimize Resume' : 'See How It Works'}
+              <Link href={user ? '/resume-builder' : '/sign-in'}>
+                {user ? 'Build Resume' : 'See How It Works'}
               </Link>
             </Button>
           </div>

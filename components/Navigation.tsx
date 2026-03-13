@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { useState, useEffect } from 'react';
-import { Menu, X, FileText, User, Home, LogOut, Settings, ChevronDown, Mic } from 'lucide-react';
+import { Menu, X, FileText, User, Home, LogOut, Settings, ChevronDown, Mic, PenTool, Search } from 'lucide-react';
 
 export default function Navigation() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -110,7 +110,14 @@ export default function Navigation() {
               href="/resume"
               className="flex items-center gap-2 text-gray-300 hover:text-white transition-colors"
             >
-              <FileText className="w-4 h-4" />
+              <Search className="w-4 h-4" />
+              Resume Analyzer
+            </Link>
+            <Link
+              href="/resume-builder"
+              className="flex items-center gap-2 text-gray-300 hover:text-white transition-colors"
+            >
+              <PenTool className="w-4 h-4" />
               Resume Builder
             </Link>
             <Link
@@ -245,7 +252,15 @@ export default function Navigation() {
                 className="flex items-center gap-2 text-gray-300 hover:text-white px-3 py-2 rounded-md transition-colors"
                 onClick={() => setIsMenuOpen(false)}
               >
-                <FileText className="w-4 h-4" />
+                <Search className="w-4 h-4" />
+                Resume Analyzer
+              </Link>
+              <Link
+                href="/resume-builder"
+                className="flex items-center gap-2 text-gray-300 hover:text-white px-3 py-2 rounded-md transition-colors"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                <PenTool className="w-4 h-4" />
                 Resume Builder
               </Link>
               <Link

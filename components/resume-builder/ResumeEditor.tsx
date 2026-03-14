@@ -75,7 +75,7 @@ export default function ResumeEditor({ resume }: ResumeEditorProps) {
     lastSavedAt: resume.updatedAt,
   });
 
-  const [zoom, setZoom] = useState(0.6);
+  const [zoom, setZoom] = useState(0.7);
   const [showTemplatePicker, setShowTemplatePicker] = useState(false);
   const previewRef = useRef<LivePreviewHandle>(null);
   const saveTimerRef = useRef<ReturnType<typeof setTimeout>>(undefined);

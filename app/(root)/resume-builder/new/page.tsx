@@ -5,13 +5,28 @@ import { redirect } from 'next/navigation';
 
 export const dynamic = 'force-dynamic';
 
-export default async function NewResumePage() {
+type NewResumeSearchParams = {
+  templateId?: string | string[];
+};
+
+interface NewResumePageProps {
+  searchParams?: NewResumeSearchParams | Promise<NewResumeSearchParams>;
+}
+
+export default async function NewResumePage({ searchParams }: NewResumePageProps) {
   const user = await requireAuth();
+
+  const resolvedSearchParams = await Promise.resolve(searchParams);
+
+  const templateParam = Array.isArray(resolvedSearchParams?.templateId)
+    ? resolvedSearchParams?.templateId[0]
+    : resolvedSearchParams?.templateId;
+  const selectedTemplateId = templateParam?.trim() ? templateParam.trim() : 'modern-01';
 
   const result = await createResume({
     userId: user.uid,
     title: 'Untitled Resume',
-    templateId: 'modern-01',
+    templateId: selectedTemplateId,
     data: createEmptyResumeData(),
   });
 

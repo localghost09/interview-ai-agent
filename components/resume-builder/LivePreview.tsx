@@ -34,15 +34,16 @@ const LivePreview = forwardRef<LivePreviewHandle, LivePreviewProps>(
     const TemplateComponent = entry.component;
 
     return (
-      <div className="h-full overflow-auto bg-dark-100 p-4">
+      <div className="h-full overflow-y-auto overflow-x-hidden bg-black p-4 flex justify-center">
         <div
-          className="mx-auto origin-top"
+          className="origin-top"
           style={{
             transform: `scale(${zoom})`,
+            transformOrigin: 'top center',
             width: '794px',
           }}
         >
-          <div ref={contentRef}>
+          <div ref={contentRef} className="pb-10">
             <Suspense
               fallback={
                 <div className="w-[794px] min-h-[1123px] bg-white rounded-lg flex items-center justify-center">

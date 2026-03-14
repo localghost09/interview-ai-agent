@@ -3,7 +3,7 @@
 import { Bell, Shield, Eye, Palette, User, Save } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useTheme } from "next-themes";
-import { updateProfile } from 'firebase/auth';
+import { EmailAuthProvider, reauthenticateWithCredential, updatePassword, updateProfile } from 'firebase/auth';
 import { auth } from '@/firebase/client';
 import { toast } from 'sonner';
 
@@ -19,6 +19,9 @@ export default function SettingsPage() {
   const [currentUser, setCurrentUser] = useState<{uid: string; email: string; name: string} | null>(null);
   const [displayName, setDisplayName] = useState('');
   const [isUpdatingProfile, setIsUpdatingProfile] = useState(false);
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [isUpdatingPassword, setIsUpdatingPassword] = useState(false);
 
   // Load settings from localStorage on component mount
   useEffect(() => {
@@ -90,6 +93,49 @@ export default function SettingsPage() {
 
   const handleThemeToggle = () => {
     setTheme(theme === 'dark' ? 'light' : 'dark');
+  };
+
+  const handlePasswordUpdate = async () => {
+    if (!currentPassword || !newPassword) {
+      toast.error('Please enter both current and new password');
+      return;
+    }
+
+    if (newPassword.length < 6) {
+      toast.error('New password must be at least 6 characters long');
+      return;
+    }
+
+    const user = auth.currentUser;
+    if (!user || !user.email) {
+      toast.error('Please sign in again before changing your password');
+      return;
+    }
+
+    setIsUpdatingPassword(true);
+    try {
+      const credential = EmailAuthProvider.credential(user.email, currentPassword);
+      await reauthenticateWithCredential(user, credential);
+      await updatePassword(user, newPassword);
+
+      setCurrentPassword('');
+      setNewPassword('');
+      toast.success('Password updated successfully');
+    } catch (error: unknown) {
+      const firebaseError = error as { code?: string; message?: string };
+
+      if (firebaseError.code === 'auth/wrong-password' || firebaseError.code === 'auth/invalid-credential') {
+        toast.error('Current password is incorrect');
+      } else if (firebaseError.code === 'auth/weak-password') {
+        toast.error('New password is too weak');
+      } else if (firebaseError.code === 'auth/requires-recent-login') {
+        toast.error('Please sign out and sign back in, then try again');
+      } else {
+        toast.error(firebaseError.message || 'Failed to update password');
+      }
+    } finally {
+      setIsUpdatingPassword(false);
+    }
   };
 
   // Prevent hydration mismatch
@@ -223,16 +269,24 @@ export default function SettingsPage() {
                 <input
                   type="password"
                   placeholder="Current Password"
+                  value={currentPassword}
+                  onChange={(e) => setCurrentPassword(e.target.value)}
                   className="px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-blue-500"
                 />
                 <input
                   type="password"
                   placeholder="New Password"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
                   className="px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-blue-500"
                 />
               </div>
-              <button className="mt-3 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm transition-colors">
-                Update Password
+              <button
+                onClick={handlePasswordUpdate}
+                disabled={isUpdatingPassword}
+                className="mt-3 bg-green-600 hover:bg-green-700 disabled:bg-gray-600 text-white px-4 py-2 rounded-lg text-sm transition-colors"
+              >
+                {isUpdatingPassword ? 'Updating...' : 'Update Password'}
               </button>
             </div>
             

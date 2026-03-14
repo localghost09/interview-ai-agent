@@ -1,6 +1,6 @@
 "use client";
 
-import { Bell, Shield, Eye, Palette, User, Save } from "lucide-react";
+import { Bell, Shield, Eye, Palette, User, Save, Settings as SettingsIcon, Trash2 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useTheme } from "next-themes";
 import { EmailAuthProvider, reauthenticateWithCredential, updatePassword, updateProfile } from 'firebase/auth';
@@ -139,278 +139,339 @@ export default function SettingsPage() {
   };
 
   // Prevent hydration mismatch
-  if (!mounted) {
-    return null;
-  }
+  if (!mounted) return null;
+
   return (
-    <>
-      {/* Header */}
-      <div className="mb-8 text-center">
-        <h1 className="text-4xl md:text-5xl font-bold text-white dark:text-white text-gray-900 mb-4">
-          Settings
-        </h1>
-        <p className="text-xl text-gray-300 dark:text-gray-300 text-gray-600 leading-relaxed max-w-3xl mx-auto">
-          Customize your AI MockPrep experience
-        </p>
-      </div>
+    <div className="min-h-screen">
 
-      {/* Settings Content */}
-      <div className="max-w-4xl mx-auto space-y-8">
-        {/* Profile Settings */}
-        <div className="bg-gray-800/50 dark:bg-gray-800/50 bg-white/90 border dark:border-transparent border-gray-200 rounded-2xl p-8 shadow-lg">
-          <div className="flex items-center gap-3 mb-6">
-            <User className="w-6 h-6 text-green-400" />
-            <h2 className="text-2xl font-bold text-white dark:text-white text-gray-900">Profile</h2>
-          </div>
-          
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div className="flex-1">
-                <h3 className="text-white dark:text-white text-gray-900 font-medium">Display Name</h3>
-                <p className="text-gray-400 dark:text-gray-400 text-gray-600 text-sm">This will be shown in your profile and navigation</p>
-              </div>
-            </div>
-            
-            <div className="flex gap-3">
-              <input
-                type="text"
-                value={displayName}
-                onChange={(e) => setDisplayName(e.target.value)}
-                placeholder="Enter your full name"
-                className="flex-1 bg-gray-700 dark:bg-gray-700 bg-gray-100 text-white dark:text-white text-gray-900 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-              <button
-                onClick={handleProfileUpdate}
-                disabled={isUpdatingProfile || !displayName.trim()}
-                className="bg-green-600 hover:bg-green-700 disabled:bg-gray-600 text-white px-6 py-2 rounded-lg flex items-center gap-2 transition-colors"
-              >
-                <Save className="w-4 h-4" />
-                {isUpdatingProfile ? 'Updating...' : 'Update'}
-              </button>
-            </div>
-            
-            {currentUser && (
-              <div className="text-sm text-gray-400 dark:text-gray-400 text-gray-600">
-                Current email: {currentUser.email}
-              </div>
-            )}
-          </div>
+      {/* ── Hero ──────────────────────────────────────────── */}
+      <div className="relative mb-12 pb-2 text-center">
+        <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+          <div className="h-72 w-72 rounded-full bg-primary-200/5 blur-3xl" />
         </div>
-
-        {/* Notifications */}
-        <div className="bg-gray-800/50 dark:bg-gray-800/50 bg-white/90 border dark:border-transparent border-gray-200 rounded-2xl p-8 shadow-lg">
-          <div className="flex items-center gap-3 mb-6">
-            <Bell className="w-6 h-6 text-blue-400" />
-            <h2 className="text-2xl font-bold text-white dark:text-white text-gray-900">Notifications</h2>
+        <div className="relative">
+          <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-primary-200/20 bg-primary-200/8 px-4 py-1.5 text-xs font-semibold uppercase tracking-widest text-primary-200">
+            <SettingsIcon className="h-3 w-3" />
+            Settings
           </div>
-          
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-white dark:text-white text-gray-900 font-medium">Email Notifications</h3>
-                <p className="text-gray-400 dark:text-gray-400 text-gray-600 text-sm">Receive interview reminders and updates</p>
-              </div>
-              <label className="relative inline-flex items-center cursor-pointer">
-                <input 
-                  type="checkbox" 
-                  className="sr-only peer" 
-                  checked={emailNotifications}
-                  onChange={() => handleToggle(setEmailNotifications, emailNotifications, 'emailNotifications')}
-                />
-                <div className="w-11 h-6 bg-gray-600 dark:bg-gray-600 bg-gray-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-              </label>
-            </div>
-            
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-white font-medium">Interview Reminders</h3>
-                <p className="text-gray-400 text-sm">Get notified before scheduled interviews</p>
-              </div>
-              <label className="relative inline-flex items-center cursor-pointer">
-                <input 
-                  type="checkbox" 
-                  className="sr-only peer" 
-                  checked={interviewReminders}
-                  onChange={() => handleToggle(setInterviewReminders, interviewReminders, 'interviewReminders')}
-                />
-                <div className="w-11 h-6 bg-gray-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-              </label>
-            </div>
-            
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-white font-medium">Marketing Emails</h3>
-                <p className="text-gray-400 text-sm">Receive updates about new features and tips</p>
-              </div>
-              <label className="relative inline-flex items-center cursor-pointer">
-                <input 
-                  type="checkbox" 
-                  className="sr-only peer" 
-                  checked={marketingEmails}
-                  onChange={() => handleToggle(setMarketingEmails, marketingEmails, 'marketingEmails')}
-                />
-                <div className="w-11 h-6 bg-gray-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-              </label>
-            </div>
-          </div>
-        </div>
-
-        {/* Privacy & Security */}
-        <div className="bg-gray-800/50 rounded-2xl p-8">
-          <div className="flex items-center gap-3 mb-6">
-            <Shield className="w-6 h-6 text-green-400" />
-            <h2 className="text-2xl font-bold text-white">Privacy & Security</h2>
-          </div>
-          
-          <div className="space-y-6">
-            <div>
-              <h3 className="text-white font-medium mb-3">Change Password</h3>
-              <div className="grid md:grid-cols-2 gap-4">
-                <input
-                  type="password"
-                  placeholder="Current Password"
-                  value={currentPassword}
-                  onChange={(e) => setCurrentPassword(e.target.value)}
-                  className="px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-blue-500"
-                />
-                <input
-                  type="password"
-                  placeholder="New Password"
-                  value={newPassword}
-                  onChange={(e) => setNewPassword(e.target.value)}
-                  className="px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-blue-500"
-                />
-              </div>
-              <button
-                onClick={handlePasswordUpdate}
-                disabled={isUpdatingPassword}
-                className="mt-3 bg-green-600 hover:bg-green-700 disabled:bg-gray-600 text-white px-4 py-2 rounded-lg text-sm transition-colors"
-              >
-                {isUpdatingPassword ? 'Updating...' : 'Update Password'}
-              </button>
-            </div>
-            
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-white font-medium">Two-Factor Authentication</h3>
-                <p className="text-gray-400 text-sm">Add an extra layer of security to your account</p>
-              </div>
-              <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm transition-colors">
-                Enable 2FA
-              </button>
-            </div>
-          </div>
-        </div>
-
-        {/* Appearance */}
-        <div className="bg-gray-800/50 rounded-2xl p-8">
-          <div className="flex items-center gap-3 mb-6">
-            <Palette className="w-6 h-6 text-purple-400" />
-            <h2 className="text-2xl font-bold text-white">Appearance</h2>
-          </div>
-          
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-white dark:text-white text-gray-900 font-medium">Dark Mode</h3>
-                <p className="text-gray-400 dark:text-gray-400 text-gray-600 text-sm">Use dark theme across the application</p>
-              </div>
-              <label className="relative inline-flex items-center cursor-pointer">
-                <input 
-                  type="checkbox" 
-                  className="sr-only peer" 
-                  checked={theme === 'dark'}
-                  onChange={handleThemeToggle}
-                />
-                <div className="w-11 h-6 bg-gray-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-              </label>
-            </div>
-            
-            <div>
-              <h3 className="text-white font-medium mb-3">Language</h3>
-              <select className="px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-blue-500">
-                <option>English</option>
-                <option>Spanish</option>
-                <option>French</option>
-                <option>German</option>
-              </select>
-            </div>
-          </div>
-        </div>
-
-        {/* Interview Preferences */}
-        <div className="bg-gray-800/50 rounded-2xl p-8">
-          <div className="flex items-center gap-3 mb-6">
-            <Eye className="w-6 h-6 text-yellow-400" />
-            <h2 className="text-2xl font-bold text-white">Interview Preferences</h2>
-          </div>
-          
-          <div className="space-y-4">
-            <div>
-              <h3 className="text-white font-medium mb-3">Default Interview Duration</h3>
-              <select className="px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-blue-500">
-                <option>15 minutes</option>
-                <option>30 minutes</option>
-                <option>45 minutes</option>
-                <option>60 minutes</option>
-              </select>
-            </div>
-            
-            <div>
-              <h3 className="text-white font-medium mb-3">Difficulty Level</h3>
-              <select className="px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-blue-500">
-                <option>Beginner</option>
-                <option>Intermediate</option>
-                <option>Advanced</option>
-                <option>Expert</option>
-              </select>
-            </div>
-            
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-white font-medium">Auto-save Interview Progress</h3>
-                <p className="text-gray-400 text-sm">Automatically save your progress during interviews</p>
-              </div>
-              <label className="relative inline-flex items-center cursor-pointer">
-                <input 
-                  type="checkbox" 
-                  className="sr-only peer" 
-                  checked={autoSave}
-                  onChange={() => handleToggle(setAutoSave, autoSave, 'autoSave')}
-                />
-                <div className="w-11 h-6 bg-gray-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-              </label>
-            </div>
-          </div>
-        </div>
-
-        {/* Account Actions */}
-        <div className="bg-red-900/20 border border-red-500/20 rounded-2xl p-8">
-          <h2 className="text-2xl font-bold text-red-400 mb-6">Danger Zone</h2>
-          
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-white font-medium">Delete Account</h3>
-                <p className="text-gray-400 text-sm">Permanently delete your account and all data</p>
-              </div>
-              <button className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm transition-colors">
-                Delete Account
-              </button>
-            </div>
-          </div>
-        </div>
-
-        {/* Save Button */}
-        <div className="flex gap-4 justify-end">
-          <button className="border border-gray-600 text-gray-300 hover:bg-gray-700 px-6 py-3 rounded-lg font-medium transition-colors">
-            Cancel
-          </button>
-          <button className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition-colors">
-            Save All Settings
-          </button>
+          <h1 className="hero-gradient-text mb-3 text-4xl font-bold md:text-5xl">
+            Your Preferences
+          </h1>
+          <p className="mx-auto max-w-md text-light-400">
+            Customize your AI MockPrep experience to match your workflow.
+          </p>
         </div>
       </div>
-    </>
+
+      {/* ── Layout ────────────────────────────────────────── */}
+      <div className="mx-auto max-w-5xl grid gap-8 lg:grid-cols-[220px_1fr]">
+
+        {/* Sticky sidebar nav (desktop only) */}
+        <aside className="hidden lg:block">
+          <div className="interview-glass sticky top-8 p-4">
+            <p className="section-label mb-3 px-3">Navigation</p>
+            <nav className="space-y-0.5">
+              {([
+                { id: 'profile',       icon: User,        label: 'Profile',       color: 'text-emerald-400' },
+                { id: 'notifications', icon: Bell,        label: 'Notifications', color: 'text-blue-400'    },
+                { id: 'security',      icon: Shield,      label: 'Security',      color: 'text-violet-400'  },
+                { id: 'appearance',    icon: Palette,     label: 'Appearance',    color: 'text-fuchsia-400' },
+                { id: 'interviews',    icon: Eye,         label: 'Interviews',    color: 'text-amber-400'   },
+              ] as const).map(item => (
+                <a
+                  key={item.id}
+                  href={`#${item.id}`}
+                  className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-light-400 transition-all hover:bg-white/5 hover:text-white"
+                >
+                  <item.icon className={`h-4 w-4 ${item.color}`} />
+                  {item.label}
+                </a>
+              ))}
+            </nav>
+            <div className="mt-5 border-t border-white/6 pt-4">
+              <a
+                href="#danger"
+                className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-red-400/60 transition-all hover:bg-red-500/5 hover:text-red-400"
+              >
+                <Trash2 className="h-4 w-4" />
+                Danger Zone
+              </a>
+            </div>
+          </div>
+        </aside>
+
+        {/* Main content */}
+        <div className="space-y-6">
+
+          {/* ── Profile ─────────────────────── */}
+          <section id="profile" className="interview-glass overflow-hidden">
+            <div className="h-px bg-gradient-to-r from-transparent via-emerald-500/70 to-transparent" />
+            <div className="p-7">
+              <div className="mb-6 flex items-center gap-3">
+                <div className="step-card-icon h-10 w-10 !bg-emerald-500/10 !border-emerald-500/20 !text-emerald-400">
+                  <User className="h-5 w-5" />
+                </div>
+                <div>
+                  <h2 className="text-base font-bold text-white">Profile</h2>
+                  <p className="text-xs text-light-400">Manage your public identity</p>
+                </div>
+              </div>
+              <div className="space-y-4">
+                <div>
+                  <label className="section-label mb-1.5 block">Display Name</label>
+                  <p className="mb-3 text-xs text-light-400">Shown in your profile and navigation bar</p>
+                  <div className="flex gap-3">
+                    <input
+                      type="text"
+                      value={displayName}
+                      onChange={(e) => setDisplayName(e.target.value)}
+                      placeholder="Enter your full name"
+                      className="flex-1 rounded-xl border border-white/8 bg-white/5 px-4 py-2.5 text-sm text-light-100 placeholder:text-light-400 focus:border-primary-200/40 focus:outline-none focus:ring-1 focus:ring-primary-200/20"
+                    />
+                    <button
+                      onClick={handleProfileUpdate}
+                      disabled={isUpdatingProfile || !displayName.trim()}
+                      className="interview-primary-btn flex items-center gap-2 px-5 py-2.5 text-sm disabled:opacity-40"
+                    >
+                      <Save className="h-3.5 w-3.5" />
+                      {isUpdatingProfile ? 'Saving…' : 'Save'}
+                    </button>
+                  </div>
+                </div>
+                {currentUser && (
+                  <div className="flex items-center gap-2 text-xs text-light-400">
+                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+                    {currentUser.email}
+                  </div>
+                )}
+              </div>
+            </div>
+          </section>
+
+          {/* ── Notifications ───────────────── */}
+          <section id="notifications" className="interview-glass overflow-hidden">
+            <div className="h-px bg-gradient-to-r from-transparent via-blue-500/70 to-transparent" />
+            <div className="p-7">
+              <div className="mb-6 flex items-center gap-3">
+                <div className="step-card-icon h-10 w-10 !bg-blue-500/10 !border-blue-500/20 !text-blue-400">
+                  <Bell className="h-5 w-5" />
+                </div>
+                <div>
+                  <h2 className="text-base font-bold text-white">Notifications</h2>
+                  <p className="text-xs text-light-400">Control what reaches your inbox</p>
+                </div>
+              </div>
+              <div className="divide-y divide-white/5">
+                {([
+                  { label: 'Email Notifications', desc: 'Interview reminders and platform updates',        checked: emailNotifications, key: 'emailNotifications', setter: setEmailNotifications },
+                  { label: 'Interview Reminders', desc: 'Get notified before scheduled interviews',        checked: interviewReminders, key: 'interviewReminders', setter: setInterviewReminders },
+                  { label: 'Marketing Emails',    desc: 'New features, tips and product announcements',   checked: marketingEmails,    key: 'marketingEmails',    setter: setMarketingEmails    },
+                ] as const).map(item => (
+                  <div key={item.key} className="flex items-center justify-between py-4 first:pt-0 last:pb-0">
+                    <div>
+                      <p className="text-sm font-medium text-light-100">{item.label}</p>
+                      <p className="text-xs text-light-400">{item.desc}</p>
+                    </div>
+                    <label className="relative inline-flex cursor-pointer items-center">
+                      <input
+                        type="checkbox"
+                        className="sr-only peer"
+                        checked={item.checked}
+                        onChange={() => handleToggle(item.setter as (v: boolean) => void, item.checked, item.key)}
+                      />
+                      <div className="h-6 w-11 rounded-full bg-white/10 transition-colors after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:bg-white after:transition-all after:content-[''] peer-checked:bg-primary-200 peer-checked:after:translate-x-full peer-focus:outline-none" />
+                    </label>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </section>
+
+          {/* ── Privacy & Security ──────────── */}
+          <section id="security" className="interview-glass overflow-hidden">
+            <div className="h-px bg-gradient-to-r from-transparent via-violet-500/70 to-transparent" />
+            <div className="p-7">
+              <div className="mb-6 flex items-center gap-3">
+                <div className="step-card-icon h-10 w-10 !bg-violet-500/10 !border-violet-500/20 !text-violet-400">
+                  <Shield className="h-5 w-5" />
+                </div>
+                <div>
+                  <h2 className="text-base font-bold text-white">Privacy & Security</h2>
+                  <p className="text-xs text-light-400">Keep your account safe</p>
+                </div>
+              </div>
+              <div className="space-y-6">
+                <div>
+                  <label className="section-label mb-3 block">Change Password</label>
+                  <div className="grid gap-3 md:grid-cols-2">
+                    <input
+                      type="password"
+                      placeholder="Current password"
+                      value={currentPassword}
+                      onChange={(e) => setCurrentPassword(e.target.value)}
+                      className="rounded-xl border border-white/8 bg-white/5 px-4 py-2.5 text-sm text-light-100 placeholder:text-light-400 focus:border-primary-200/40 focus:outline-none focus:ring-1 focus:ring-primary-200/20"
+                    />
+                    <input
+                      type="password"
+                      placeholder="New password"
+                      value={newPassword}
+                      onChange={(e) => setNewPassword(e.target.value)}
+                      className="rounded-xl border border-white/8 bg-white/5 px-4 py-2.5 text-sm text-light-100 placeholder:text-light-400 focus:border-primary-200/40 focus:outline-none focus:ring-1 focus:ring-primary-200/20"
+                    />
+                  </div>
+                  <button
+                    onClick={handlePasswordUpdate}
+                    disabled={isUpdatingPassword}
+                    className="mt-4 interview-primary-btn px-5 py-2.5 text-sm disabled:opacity-40"
+                  >
+                    {isUpdatingPassword ? 'Updating…' : 'Update Password'}
+                  </button>
+                </div>
+                <div className="flex items-center justify-between border-t border-white/5 pt-5">
+                  <div>
+                    <p className="text-sm font-medium text-light-100">Two-Factor Authentication</p>
+                    <p className="text-xs text-light-400">Add an extra layer of security to your account</p>
+                  </div>
+                  <button className="rounded-xl border border-violet-500/30 bg-violet-500/10 px-4 py-2 text-sm font-medium text-violet-300 transition-all hover:bg-violet-500/20">
+                    Enable 2FA
+                  </button>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          {/* ── Appearance ──────────────────── */}
+          <section id="appearance" className="interview-glass overflow-hidden">
+            <div className="h-px bg-gradient-to-r from-transparent via-fuchsia-500/70 to-transparent" />
+            <div className="p-7">
+              <div className="mb-6 flex items-center gap-3">
+                <div className="step-card-icon h-10 w-10 !bg-fuchsia-500/10 !border-fuchsia-500/20 !text-fuchsia-400">
+                  <Palette className="h-5 w-5" />
+                </div>
+                <div>
+                  <h2 className="text-base font-bold text-white">Appearance</h2>
+                  <p className="text-xs text-light-400">Personalise how the app looks</p>
+                </div>
+              </div>
+              <div className="space-y-5">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-light-100">Dark Mode</p>
+                    <p className="text-xs text-light-400">Use dark theme across the application</p>
+                  </div>
+                  <label className="relative inline-flex cursor-pointer items-center">
+                    <input
+                      type="checkbox"
+                      className="sr-only peer"
+                      checked={theme === 'dark'}
+                      onChange={handleThemeToggle}
+                    />
+                    <div className="h-6 w-11 rounded-full bg-white/10 transition-colors after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:bg-white after:transition-all after:content-[''] peer-checked:bg-primary-200 peer-checked:after:translate-x-full peer-focus:outline-none" />
+                  </label>
+                </div>
+                <div className="border-t border-white/5 pt-5">
+                  <label className="section-label mb-3 block">Language</label>
+                  <select className="rounded-xl border border-white/8 bg-white/5 px-4 py-2.5 text-sm text-light-100 focus:border-primary-200/40 focus:outline-none focus:ring-1 focus:ring-primary-200/20">
+                    <option className="bg-dark-200">English</option>
+                    <option className="bg-dark-200">Spanish</option>
+                    <option className="bg-dark-200">French</option>
+                    <option className="bg-dark-200">German</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          {/* ── Interview Preferences ───────── */}
+          <section id="interviews" className="interview-glass overflow-hidden">
+            <div className="h-px bg-gradient-to-r from-transparent via-amber-500/70 to-transparent" />
+            <div className="p-7">
+              <div className="mb-6 flex items-center gap-3">
+                <div className="step-card-icon h-10 w-10 !bg-amber-500/10 !border-amber-500/20 !text-amber-400">
+                  <Eye className="h-5 w-5" />
+                </div>
+                <div>
+                  <h2 className="text-base font-bold text-white">Interview Preferences</h2>
+                  <p className="text-xs text-light-400">Shape your practice sessions</p>
+                </div>
+              </div>
+              <div className="space-y-5">
+                <div className="grid gap-5 md:grid-cols-2">
+                  <div>
+                    <label className="section-label mb-3 block">Default Duration</label>
+                    <select className="w-full rounded-xl border border-white/8 bg-white/5 px-4 py-2.5 text-sm text-light-100 focus:border-primary-200/40 focus:outline-none focus:ring-1 focus:ring-primary-200/20">
+                      <option className="bg-dark-200">15 minutes</option>
+                      <option className="bg-dark-200">30 minutes</option>
+                      <option className="bg-dark-200">45 minutes</option>
+                      <option className="bg-dark-200">60 minutes</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="section-label mb-3 block">Difficulty Level</label>
+                    <select className="w-full rounded-xl border border-white/8 bg-white/5 px-4 py-2.5 text-sm text-light-100 focus:border-primary-200/40 focus:outline-none focus:ring-1 focus:ring-primary-200/20">
+                      <option className="bg-dark-200">Beginner</option>
+                      <option className="bg-dark-200">Intermediate</option>
+                      <option className="bg-dark-200">Advanced</option>
+                      <option className="bg-dark-200">Expert</option>
+                    </select>
+                  </div>
+                </div>
+                <div className="flex items-center justify-between border-t border-white/5 pt-5">
+                  <div>
+                    <p className="text-sm font-medium text-light-100">Auto-save Progress</p>
+                    <p className="text-xs text-light-400">Automatically save your progress during interviews</p>
+                  </div>
+                  <label className="relative inline-flex cursor-pointer items-center">
+                    <input
+                      type="checkbox"
+                      className="sr-only peer"
+                      checked={autoSave}
+                      onChange={() => handleToggle(setAutoSave, autoSave, 'autoSave')}
+                    />
+                    <div className="h-6 w-11 rounded-full bg-white/10 transition-colors after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:bg-white after:transition-all after:content-[''] peer-checked:bg-primary-200 peer-checked:after:translate-x-full peer-focus:outline-none" />
+                  </label>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          {/* ── Danger Zone ─────────────────── */}
+          <section id="danger" className="overflow-hidden rounded-2xl border border-red-500/15 bg-red-500/5">
+            <div className="h-px bg-gradient-to-r from-transparent via-red-500/60 to-transparent" />
+            <div className="p-7">
+              <div className="mb-6 flex items-center gap-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-red-500/20 bg-red-500/10 text-red-400">
+                  <Trash2 className="h-5 w-5" />
+                </div>
+                <div>
+                  <h2 className="text-base font-bold text-red-400">Danger Zone</h2>
+                  <p className="text-xs text-red-400/60">Irreversible account actions</p>
+                </div>
+              </div>
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-light-100">Delete Account</p>
+                  <p className="text-xs text-light-400">Permanently delete your account and all data</p>
+                </div>
+                <button className="rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-2 text-sm font-medium text-red-400 transition-all hover:bg-red-500/20">
+                  Delete Account
+                </button>
+              </div>
+            </div>
+          </section>
+
+          {/* ── Footer actions ──────────────── */}
+          <div className="flex justify-end gap-3 pb-4">
+            <button className="rounded-xl border border-white/8 bg-white/5 px-6 py-2.5 text-sm font-medium text-light-400 transition-all hover:bg-white/8 hover:text-light-100">
+              Cancel
+            </button>
+            <button className="interview-primary-btn px-6 py-2.5 text-sm">
+              Save All Settings
+            </button>
+          </div>
+
+        </div>
+      </div>
+    </div>
   );
 }

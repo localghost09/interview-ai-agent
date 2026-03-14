@@ -305,83 +305,114 @@ export default function AudioRecorder({ onAnalysisComplete, onError, onStateChan
     return `${m}:${s}`;
   };
 
-  const energyLabel = speechEnergyScore >= 70 ? 'High Activity' : speechEnergyScore >= 40 ? 'Moderate' : 'Low';
+  const energyLabel = speechEnergyScore >= 70 ? 'High' : speechEnergyScore >= 40 ? 'Moderate' : 'Low';
   const energyColor = speechEnergyScore >= 70 ? 'text-green-500' : speechEnergyScore >= 40 ? 'text-yellow-500' : 'text-red-500';
+  const energyBarClass = speechEnergyScore >= 70
+    ? 'bg-gradient-to-r from-green-400 to-green-600'
+    : speechEnergyScore >= 40
+      ? 'bg-gradient-to-r from-yellow-400 to-yellow-600'
+      : 'bg-gradient-to-r from-red-400 to-red-600';
+
+  const WAVEFORM_FACTORS = [0.45, 0.85, 0.55, 1.0, 0.7, 0.6, 0.9, 0.5, 0.8, 0.65, 0.4, 0.95, 0.6];
 
   return (
     <div className="flex flex-col items-center gap-6">
-      {/* Record / Stop Button */}
-      <button
-        onClick={state === 'recording' ? stopRecording : startRecording}
-        disabled={state === 'analyzing'}
-        className={`relative w-24 h-24 rounded-full flex items-center justify-center transition-all duration-300 ${
-          state === 'recording'
-            ? 'bg-red-500 hover:bg-red-600 shadow-lg shadow-red-500/30'
-            : state === 'analyzing'
-              ? 'bg-gray-400 cursor-not-allowed'
-              : 'bg-blue-600 hover:bg-blue-700 shadow-lg shadow-blue-500/30'
-        }`}
-      >
-        {state === 'analyzing' ? (
-          <Loader2 className="w-10 h-10 text-white animate-spin" />
-        ) : state === 'recording' ? (
-          <Square className="w-8 h-8 text-white" />
-        ) : (
-          <Mic className="w-10 h-10 text-white" />
-        )}
 
-        {/* Pulsing ring when recording */}
-        {state === 'recording' && (
-          <span className="absolute inset-0 rounded-full border-4 border-red-400 animate-ping opacity-30" />
-        )}
-      </button>
+      {/* Idle hint */}
+      {state === 'idle' && (
+        <p className="section-label text-[0.7rem]">Ready to Record</p>
+      )}
+
+      {/* Record / Stop / Analyzing button */}
+      <div className="relative">
+        <button
+          onClick={state === 'recording' ? stopRecording : startRecording}
+          disabled={state === 'analyzing'}
+          className={`relative w-28 h-28 rounded-full flex items-center justify-center transition-all duration-300 ${
+            state === 'recording'
+              ? 'bg-gradient-to-br from-red-500 to-red-600 shadow-2xl shadow-red-500/40'
+              : state === 'analyzing'
+                ? 'bg-gray-300 dark:bg-gray-700 cursor-not-allowed'
+                : 'bg-gradient-to-br from-blue-500 to-indigo-600 shadow-2xl shadow-blue-500/40 hover:shadow-blue-500/60 hover:scale-105 active:scale-95'
+          }`}
+        >
+          {state === 'analyzing' ? (
+            <Loader2 className="w-10 h-10 text-white animate-spin" />
+          ) : state === 'recording' ? (
+            <Square className="w-8 h-8 text-white fill-white" />
+          ) : (
+            <Mic className="w-11 h-11 text-white" />
+          )}
+
+          {/* Pulsing rings when recording */}
+          {state === 'recording' && (
+            <>
+              <span className="absolute inset-0 rounded-full border-4 border-red-400/60 animate-ping" />
+              <span
+                className="absolute -inset-3 rounded-full border-2 border-red-400/25 animate-ping"
+                style={{ animationDelay: '0.4s', animationDuration: '1.5s' }}
+              />
+            </>
+          )}
+        </button>
+      </div>
 
       {/* Status text */}
-      <p className="text-sm text-gray-500 dark:text-gray-400">
-        {state === 'idle' && 'Tap to start recording'}
-        {state === 'recording' && 'Recording... tap to stop'}
-        {state === 'analyzing' && 'Analyzing your speech...'}
+      <p className={`text-sm font-medium ${
+        state === 'recording' ? 'text-red-400' : 'text-light-400'
+      }`}>
+        {state === 'idle' && 'Click to start recording'}
+        {state === 'recording' && 'Recording — click to stop'}
+        {state === 'analyzing' && 'Analyzing your speech…'}
       </p>
 
       {/* Recording info */}
       {state === 'recording' && (
-        <div className="w-full max-w-sm space-y-4">
+        <div className="w-full space-y-4 animate-in fade-in duration-300">
           {/* Timer */}
           <div className="text-center">
-            <span className="text-3xl font-mono font-bold text-gray-900 dark:text-white">
+            <span className="text-4xl font-mono font-bold text-white tracking-widest">
               {formatTime(duration)}
             </span>
           </div>
 
-          {/* Volume meter */}
-          <div className="space-y-1">
-            <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400">
-              <span>Volume</span>
+          {/* Live waveform bars driven by volumeLevel */}
+          <div className="flex items-center justify-center gap-1 h-12">
+            {WAVEFORM_FACTORS.map((factor, i) => {
+              const height = Math.max(4, Math.round(volumeLevel * factor * 44));
+              return (
+                <div
+                  key={i}
+                  className="w-1.5 rounded-full bg-gradient-to-t from-red-500 to-red-300 transition-all duration-75"
+                  style={{ height: `${height}px` }}
+                />
+              );
+            })}
+          </div>
+
+          {/* Microphone level */}
+          <div className="space-y-1.5">
+            <div className="flex justify-between text-xs font-medium text-light-400">
+              <span>Microphone</span>
               <span>{Math.round(volumeLevel * 100)}%</span>
             </div>
-            <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+            <div className="h-2 bg-light-800/80 rounded-full overflow-hidden">
               <div
-                className="h-full bg-gradient-to-r from-green-400 to-green-600 rounded-full transition-all duration-100"
+                className="h-full bg-gradient-to-r from-primary-200 to-purple-400 rounded-full transition-all duration-75"
                 style={{ width: `${volumeLevel * 100}%` }}
               />
             </div>
           </div>
 
-          {/* Speech energy indicator */}
-          <div className="space-y-1">
-            <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400">
+          {/* Speech energy */}
+          <div className="space-y-1.5">
+            <div className="flex justify-between text-xs font-medium text-light-400">
               <span>Speech Energy</span>
               <span className={energyColor}>{energyLabel} ({speechEnergyScore}%)</span>
             </div>
-            <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+            <div className="h-2 bg-light-800/80 rounded-full overflow-hidden">
               <div
-                className={`h-full rounded-full transition-all duration-300 ${
-                  speechEnergyScore >= 70
-                    ? 'bg-gradient-to-r from-green-400 to-green-600'
-                    : speechEnergyScore >= 40
-                      ? 'bg-gradient-to-r from-yellow-400 to-yellow-600'
-                      : 'bg-gradient-to-r from-red-400 to-red-600'
-                }`}
+                className={`h-full rounded-full transition-all duration-300 ${energyBarClass}`}
                 style={{ width: `${speechEnergyScore}%` }}
               />
             </div>

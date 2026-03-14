@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { useState, useEffect } from 'react';
-import { Menu, X, FileText, User, Home, LogOut, Settings, ChevronDown, Mic, PenTool, Search } from 'lucide-react';
+import { Menu, X, User, Home, LogOut, Settings, ChevronDown, Mic, PenTool, Search, Code2 } from 'lucide-react';
 
 export default function Navigation() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -270,6 +270,14 @@ export default function Navigation() {
               >
                 <Mic className="w-4 h-4" />
                 Speech Coach
+              </Link>
+              <Link
+                href="/coding-interview"
+                className="flex items-center gap-2 text-gray-300 hover:text-white px-3 py-2 rounded-md transition-colors"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                <Code2 className="w-4 h-4" />
+                Coding Interview
               </Link>
 
               {currentUser ? (

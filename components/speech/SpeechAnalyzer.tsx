@@ -2,7 +2,10 @@
 
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { toast } from 'sonner';
-import { ArrowLeft, Mic, Type, Shuffle, MessageSquareQuote, Filter } from 'lucide-react';
+import {
+  ArrowLeft, Mic, Type, Shuffle, MessageSquareQuote,
+  Brain, Shield, MessageCircle, Activity,
+} from 'lucide-react';
 import AudioRecorder from '@/components/speech/AudioRecorder';
 import SpeechDashboard from '@/components/speech/SpeechDashboard';
 import {
@@ -14,9 +17,15 @@ import {
 
 const CATEGORIES = Object.keys(CATEGORY_LABELS) as QuestionCategory[];
 
+const FEATURE_PILLARS = [
+  { icon: Shield, label: 'Confidence' },
+  { icon: Brain, label: 'Clarity' },
+  { icon: MessageCircle, label: 'Filler Words' },
+  { icon: Activity, label: 'Pacing' },
+] as const;
+
 /**
  * Orchestrates the speech analysis flow: record → analyze → display results.
- * Follows the same state-machine pattern as ResumeAnalyzer.
  */
 export default function SpeechAnalyzer() {
   const [view, setView] = useState<'input' | 'analyzing' | 'dashboard'>('input');
@@ -34,12 +43,10 @@ export default function SpeechAnalyzer() {
     setCurrentQuestion(getRandomQuestion());
   }, []);
 
-  // Auto-scroll only the transcript container (not the page)
+  // Auto-scroll only the transcript container
   useEffect(() => {
     const container = transcriptContainerRef.current;
-    if (container) {
-      container.scrollTop = container.scrollHeight;
-    }
+    if (container) container.scrollTop = container.scrollHeight;
   }, [liveTranscript, interimText]);
 
   const handleAnalysisComplete = (data: SpeechAnalysisResponse) => {
@@ -54,9 +61,7 @@ export default function SpeechAnalyzer() {
 
   const handleStateChange = (state: 'idle' | 'recording' | 'analyzing') => {
     setIsRecording(state === 'recording');
-    if (state === 'analyzing') {
-      setView('analyzing');
-    }
+    if (state === 'analyzing') setView('analyzing');
     if (state === 'idle') {
       setLiveTranscript('');
       setInterimText('');
@@ -77,83 +82,117 @@ export default function SpeechAnalyzer() {
     setCurrentQuestion(getRandomQuestion(currentQuestion, newCategory));
   };
 
+  const isIdle = view === 'input' && !isRecording;
+  const isActive = isRecording || view === 'analyzing';
+
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-      {/* Input / Recording View */}
+    <div className="flex flex-col gap-6">
+      {/* ── Input / Analyzing View ── */}
       {(view === 'input' || view === 'analyzing') && (
-        <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-          {/* Hero Section */}
-          <div className="text-center mb-10">
-            <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-blue-100 dark:bg-blue-900/30 mb-4">
-              <Mic className="w-8 h-8 text-blue-600 dark:text-blue-400" />
-            </div>
-            <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white mb-3">
-              Speech Coach
-            </h1>
-            <p className="text-gray-500 dark:text-gray-400 max-w-xl mx-auto">
-              Record yourself answering an interview question. Get instant feedback on your
-              confidence, clarity, filler words, and pacing — powered by AI.
-            </p>
-          </div>
+        <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 flex flex-col gap-6">
 
-          {/* Category Filter */}
-          <div className="flex justify-center mb-6">
-            <div className="inline-flex items-center gap-1.5 p-1 bg-gray-100 dark:bg-gray-800 rounded-xl flex-wrap justify-center max-w-2xl">
-              <Filter className="w-3.5 h-3.5 text-gray-400 ml-2 shrink-0" />
-              {CATEGORIES.map((cat) => (
-                <button
-                  key={cat}
-                  onClick={() => handleCategoryChange(cat)}
-                  disabled={isRecording}
-                  className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-all duration-200 whitespace-nowrap ${
-                    category === cat
-                      ? 'bg-blue-600 text-white shadow-sm'
-                      : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-200 dark:hover:bg-gray-700'
-                  } ${isRecording ? 'opacity-50 cursor-not-allowed' : ''}`}
-                >
-                  {CATEGORY_LABELS[cat]}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Practice Question Card */}
-          <div className="max-w-2xl mx-auto mb-6">
-            <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm p-5">
-              <div className="flex items-start justify-between gap-4">
-                <div className="flex items-start gap-3 min-w-0">
-                  <div className="mt-0.5 flex-shrink-0 w-8 h-8 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
-                    <MessageSquareQuote className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+          {/* Hero */}
+          {isIdle && (
+            <section className="hero-section relative overflow-hidden rounded-3xl">
+              <div className="hero-orb hero-orb-1" />
+              <div className="hero-orb hero-orb-2" />
+              <div className="hero-orb hero-orb-3" />
+              <div className="relative z-10 flex items-center justify-between gap-8 px-10 py-14 max-sm:px-5 max-sm:py-10">
+                <div className="flex flex-col gap-5 max-w-2xl">
+                  <span className="hero-pill">
+                    <span className="hero-pill-dot" />
+                    AI-Powered Speech Coaching
+                  </span>
+                  <h1 className="text-4xl sm:text-5xl lg:text-[3.4rem] font-extrabold leading-[1.12] tracking-tight">
+                    Master Your
+                    <span className="hero-gradient-text"> Interview </span>
+                    Voice
+                  </h1>
+                  <p className="text-base sm:text-lg text-light-100/80 leading-relaxed max-w-xl">
+                    Record yourself answering interview questions and receive instant AI&#8209;powered feedback on confidence, clarity, filler words, and pacing.
+                  </p>
+                  <div className="flex flex-wrap gap-2 mt-1">
+                    {FEATURE_PILLARS.map(({ icon: Icon, label }) => (
+                      <span key={label} className="inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-white/5 px-3 py-1 text-xs text-light-300">
+                        <Icon className="w-3 h-3" />
+                        {label}
+                      </span>
+                    ))}
                   </div>
-                  <div className="min-w-0">
-                    <p className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Practice Question</p>
-                    <p className="text-sm font-medium text-gray-900 dark:text-white leading-relaxed">
+                </div>
+                <Mic className="w-40 h-40 text-primary-200/30 max-lg:hidden hero-float shrink-0" />
+              </div>
+            </section>
+          )}
+
+          {/* ── Category + Question (idle) ── */}
+          {isIdle && (
+            <section className="interview-glass p-6 sm:p-8 flex flex-col gap-6">
+              {/* Section label */}
+              <div>
+                <p className="section-label">Practice Question</p>
+                <p className="text-sm text-light-400 mt-1">Choose a category, then answer the question below out loud.</p>
+              </div>
+
+              {/* Category filter */}
+              <div className="flex flex-wrap gap-2">
+                {CATEGORIES.map((cat) => (
+                  <button
+                    key={cat}
+                    onClick={() => handleCategoryChange(cat)}
+                    className={`px-4 py-1.5 text-xs font-semibold rounded-full border transition-all duration-200 whitespace-nowrap ${
+                      category === cat
+                        ? 'bg-primary-200/20 border-primary-200/40 text-primary-200'
+                        : 'border-white/10 bg-white/5 text-light-400 hover:text-white hover:border-white/20 hover:bg-white/10'
+                    }`}
+                  >
+                    {CATEGORY_LABELS[cat]}
+                  </button>
+                ))}
+              </div>
+
+              {/* Question card */}
+              <div className="relative rounded-2xl border border-primary-200/15 bg-primary-200/5 p-5">
+                <div className="step-card-number">Q</div>
+                <div className="flex items-start justify-between gap-4">
+                  <div className="flex items-start gap-3 min-w-0">
+                    <div className="step-card-icon w-9 h-9 shrink-0 mt-0.5">
+                      <MessageSquareQuote className="w-4 h-4" />
+                    </div>
+                    <p className="text-sm font-medium text-light-100 leading-relaxed pt-1.5">
                       {currentQuestion}
                     </p>
                   </div>
+                  <button
+                    onClick={() => setCurrentQuestion(getRandomQuestion(currentQuestion, category))}
+                    className="shrink-0 p-2 rounded-xl border border-white/10 bg-white/5 text-light-400 hover:text-primary-200 hover:border-primary-200/30 hover:bg-primary-200/10 transition-all"
+                    title="Get another question"
+                  >
+                    <Shuffle className="w-4 h-4" />
+                  </button>
                 </div>
-                <button
-                  onClick={() => setCurrentQuestion(getRandomQuestion(currentQuestion, category))}
-                  disabled={isRecording}
-                  className={`flex-shrink-0 p-2 rounded-lg text-gray-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:text-blue-400 dark:hover:bg-blue-900/20 transition-colors ${
-                    isRecording ? 'opacity-50 cursor-not-allowed' : ''
-                  }`}
-                  title="Get another question"
-                >
-                  <Shuffle className="w-4 h-4" />
-                </button>
+              </div>
+            </section>
+          )}
+
+          {/* ── Active: compact question banner ── */}
+          {isActive && (
+            <div className="interview-glass flex items-start gap-3 px-5 py-4 animate-in fade-in slide-in-from-top-2 duration-300">
+              <div className="step-card-icon w-8 h-8 shrink-0 mt-0.5">
+                <MessageSquareQuote className="w-3.5 h-3.5" />
+              </div>
+              <div className="min-w-0">
+                <p className="section-label text-[0.65rem] mb-0.5">Question</p>
+                <p className="text-sm text-light-100 leading-snug">{currentQuestion}</p>
               </div>
             </div>
-          </div>
+          )}
 
-          {/* Recorder + Live Transcript Layout */}
-          <div className={`mx-auto transition-all duration-500 ${
-            isRecording || view === 'analyzing'
-              ? 'max-w-4xl grid grid-cols-1 md:grid-cols-2 gap-6'
-              : 'max-w-lg'
-          }`}>
-            {/* Recorder Card */}
-            <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm p-8">
+          {/* ── Recorder + Live Transcript ── */}
+          <div className={`transition-all duration-500 ${isActive ? 'grid grid-cols-1 md:grid-cols-2 gap-6' : 'max-w-md mx-auto w-full'}`}>
+
+            {/* Recorder card */}
+            <div className="interview-glass p-8">
               <AudioRecorder
                 onAnalysisComplete={handleAnalysisComplete}
                 onError={handleError}
@@ -163,81 +202,88 @@ export default function SpeechAnalyzer() {
               />
             </div>
 
-            {/* Live Transcript Panel */}
-            {(isRecording || view === 'analyzing') && (
-              <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm p-6 flex flex-col animate-in fade-in slide-in-from-right-4 duration-500">
-                <div className="flex items-center justify-between mb-4">
+            {/* Live Transcript panel */}
+            {isActive && (
+              <div className="interview-glass p-6 flex flex-col gap-4 animate-in fade-in slide-in-from-right-4 duration-500">
+                <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <Type className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-                    <h3 className="text-sm font-semibold text-gray-900 dark:text-white">
-                      Live Transcript
-                    </h3>
+                    <div className="step-card-icon w-7 h-7">
+                      <Type className="w-3.5 h-3.5" />
+                    </div>
+                    <h3 className="text-sm font-semibold text-white">Live Transcript</h3>
                   </div>
+                  {isRecording && (
+                    <span className="flex items-center gap-1.5 text-xs font-semibold text-red-400">
+                      <span className="relative flex h-2 w-2">
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75" />
+                        <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500" />
+                      </span>
+                      LIVE
+                    </span>
+                  )}
                 </div>
-
-                <div ref={transcriptContainerRef} className="flex-1 min-h-[200px] max-h-[300px] overflow-y-auto rounded-lg bg-gray-50 dark:bg-gray-800/50 p-4">
+                <div
+                  ref={transcriptContainerRef}
+                  className="flex-1 min-h-[200px] max-h-[320px] overflow-y-auto rounded-xl bg-light-800/60 border border-white/5 p-4"
+                >
                   {!liveTranscript && !interimText ? (
-                    <p className="text-sm text-gray-400 dark:text-gray-500 italic">
-                      Start speaking to see live transcription...
-                    </p>
+                    <p className="text-sm text-light-400 italic">Start speaking to see live transcription…</p>
                   ) : (
                     <p className="text-sm leading-relaxed">
-                      <span className="text-gray-900 dark:text-white">{liveTranscript}</span>
+                      <span className="text-light-100">{liveTranscript}</span>
                       {interimText && interimText.length > liveTranscript.length && (
-                        <span className="text-gray-400 dark:text-gray-500 italic">
-                          {interimText.slice(liveTranscript.length)}
-                        </span>
+                        <span className="text-light-400 italic">{interimText.slice(liveTranscript.length)}</span>
                       )}
                     </p>
                   )}
                 </div>
-
-                {isRecording && (
-                  <div className="mt-3 flex items-center gap-2">
-                    <span className="relative flex h-2 w-2">
-                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75" />
-                      <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500" />
-                    </span>
-                    <span className="text-xs text-gray-500 dark:text-gray-400">Listening...</span>
-                  </div>
-                )}
               </div>
             )}
           </div>
 
-          {/* Analyzing Overlay */}
+          {/* Analyzing state */}
           {view === 'analyzing' && (
-            <div className="mt-8 text-center animate-in fade-in duration-500">
-              <div className="inline-flex flex-col items-center gap-3">
-                <div className="w-10 h-10 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
-                <p className="text-gray-500 dark:text-gray-400 text-sm">
-                  Transcribing and analyzing your speech...
-                </p>
+            <div className="text-center py-8 animate-in fade-in duration-500">
+              <div className="inline-flex flex-col items-center gap-4">
+                <div className="w-12 h-12 rounded-full border-4 border-primary-200/30 border-t-primary-200 animate-spin" />
+                <p className="text-sm font-medium text-light-400">Transcribing and analyzing your speech…</p>
               </div>
             </div>
           )}
         </div>
       )}
 
-      {/* Dashboard View */}
+      {/* ── Dashboard View ── */}
       {view === 'dashboard' && result && (
         <div className="animate-in fade-in duration-700">
-          <div className="flex items-center justify-between mb-8">
-            <button
-              onClick={() => {
-                setResult(null);
-                setLiveTranscript('');
-                setInterimText('');
-                setView('input');
-              }}
-              className="flex items-center gap-2 text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-colors"
-            >
-              <ArrowLeft size={20} />
-              Record Again
-            </button>
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Speech Analysis</h2>
+          {/* Dashboard header bar */}
+          <div className="border-b border-white/6 bg-dark-100/80 backdrop-blur-sm">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5">
+              <div className="flex items-center justify-between">
+                <button
+                  onClick={() => {
+                    setResult(null);
+                    setLiveTranscript('');
+                    setInterimText('');
+                    setView('input');
+                  }}
+                  className="flex items-center gap-2 text-light-400 hover:text-white transition-colors text-sm font-medium"
+                >
+                  <ArrowLeft size={16} />
+                  Record Again
+                </button>
+                <div className="text-center">
+                  <h2 className="text-xl font-bold text-white">Speech Analysis Results</h2>
+                  <p className="text-xs text-light-400 mt-0.5">Powered by AI</p>
+                </div>
+                <div className="w-28" />
+              </div>
+            </div>
           </div>
-          <SpeechDashboard data={result} />
+
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <SpeechDashboard data={result} />
+          </div>
         </div>
       )}
     </div>

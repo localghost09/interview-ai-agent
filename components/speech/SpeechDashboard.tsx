@@ -44,8 +44,8 @@ function ScoreGauge({ score, label }: { score: number; label: string }) {
         </RadialBarChart>
       </ResponsiveContainer>
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 mt-2 text-center">
-        <span className="text-4xl font-bold text-gray-900 dark:text-white block">{safeScore}</span>
-        <span className="text-xs text-gray-500 uppercase tracking-wider font-semibold">{label}</span>
+        <span className="text-4xl font-bold text-white block">{safeScore}</span>
+        <span className="text-xs text-light-400 uppercase tracking-wider font-semibold">{label}</span>
       </div>
     </div>
   );
@@ -59,13 +59,13 @@ function StatCard({ icon: Icon, label, value, color }: {
   color: string;
 }) {
   return (
-    <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm p-5 flex items-center gap-4">
+    <div className="interview-glass p-5 flex items-center gap-4">
       <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${color}`}>
         <Icon className="w-6 h-6 text-white" />
       </div>
       <div>
-        <p className="text-2xl font-bold text-gray-900 dark:text-white">{value}</p>
-        <p className="text-sm text-gray-500 dark:text-gray-400">{label}</p>
+        <p className="text-2xl font-bold text-white">{value}</p>
+        <p className="text-sm text-light-400">{label}</p>
       </div>
     </div>
   );
@@ -74,14 +74,14 @@ function StatCard({ icon: Icon, label, value, color }: {
 /** Displays the interview question that was answered. */
 function QuestionCard({ question }: { question: string }) {
   return (
-    <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm p-5">
+    <div className="interview-glass p-5">
       <div className="flex items-start gap-3">
-        <div className="mt-0.5 flex-shrink-0 w-8 h-8 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
-          <MessageSquareQuote className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+        <div className="mt-0.5 flex-shrink-0 w-8 h-8 rounded-lg bg-primary-200/10 border border-primary-200/15 flex items-center justify-center">
+          <MessageSquareQuote className="w-4 h-4 text-primary-200" />
         </div>
         <div className="min-w-0">
-          <p className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Question Answered</p>
-          <p className="text-sm font-medium text-gray-900 dark:text-white leading-relaxed">
+          <p className="section-label mb-1">Question Answered</p>
+          <p className="text-sm font-medium text-light-100 leading-relaxed">
             {question}
           </p>
         </div>
@@ -96,20 +96,20 @@ function ReliabilityBadge({ reliability }: { reliability: 'high' | 'medium' | 'l
 
   const config = reliability === 'medium'
     ? {
-        bg: 'bg-yellow-50 dark:bg-yellow-900/20',
-        border: 'border-yellow-200 dark:border-yellow-800',
-        iconColor: 'text-yellow-500',
-        titleColor: 'text-yellow-800 dark:text-yellow-200',
-        textColor: 'text-yellow-600 dark:text-yellow-400',
+        bg: 'bg-yellow-900/20',
+        border: 'border-yellow-700/50',
+        iconColor: 'text-yellow-400',
+        titleColor: 'text-yellow-200',
+        textColor: 'text-yellow-400',
         title: 'Moderate Reliability',
         message: 'Recording is between 10-30 seconds. Pace and hesitation metrics may be less precise. Record for 30+ seconds for full accuracy.',
       }
     : {
-        bg: 'bg-orange-50 dark:bg-orange-900/20',
-        border: 'border-orange-200 dark:border-orange-800',
-        iconColor: 'text-orange-500',
-        titleColor: 'text-orange-800 dark:text-orange-200',
-        textColor: 'text-orange-600 dark:text-orange-400',
+        bg: 'bg-orange-900/20',
+        border: 'border-orange-700/50',
+        iconColor: 'text-orange-400',
+        titleColor: 'text-orange-200',
+        textColor: 'text-orange-400',
         title: 'Low Reliability',
         message: 'Recording is under 10 seconds. Speech metrics are approximate. Record for 30+ seconds for reliable analysis.',
       };
@@ -135,13 +135,13 @@ function ScoreBar({ score, className }: { score: number; className?: string }) {
 
   return (
     <div className={`flex items-center gap-3 ${className ?? ''}`}>
-      <div className="flex-1 h-2.5 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+      <div className="flex-1 h-2.5 bg-white/10 rounded-full overflow-hidden">
         <div
           className={`h-full rounded-full transition-all duration-500 ${getColor(score)}`}
           style={{ width: `${score}%` }}
         />
       </div>
-      <span className="text-sm font-bold text-gray-900 dark:text-white w-8 text-right">{score}</span>
+      <span className="text-sm font-bold text-white w-8 text-right">{score}</span>
     </div>
   );
 }
@@ -150,9 +150,9 @@ function ScoreBar({ score, className }: { score: number; className?: string }) {
 function TagList({ tags, variant }: { tags: string[]; variant: 'green' | 'red' | 'gray' }) {
   if (tags.length === 0) return null;
   const colorMap = {
-    green: 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300',
-    red: 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300',
-    gray: 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400',
+    green: 'bg-green-500/15 text-green-300',
+    red: 'bg-red-500/15 text-red-300',
+    gray: 'bg-white/10 text-light-400',
   };
   return (
     <div className="flex flex-wrap gap-1.5 mt-2">
@@ -180,13 +180,13 @@ function EvaluationMethodCard({
   className?: string;
 }) {
   return (
-    <div className={`bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm p-5 ${className ?? ''}`}>
+    <div className={`interview-glass p-5 ${className ?? ''}`}>
       <div className="flex items-center gap-2 mb-3">
-        <Icon className="w-5 h-5 text-blue-500" />
-        <h4 className="font-semibold text-gray-900 dark:text-white text-sm">{title}</h4>
+        <Icon className="w-5 h-5 text-primary-200" />
+        <h4 className="font-semibold text-light-100 text-sm">{title}</h4>
       </div>
       <ScoreBar score={score} className="mb-3" />
-      <div className="text-sm text-gray-600 dark:text-gray-400 space-y-2">
+      <div className="text-sm text-light-400 space-y-2">
         {children}
       </div>
     </div>
@@ -233,7 +233,7 @@ function HighlightedTranscript({ transcript, fillers }: { transcript: string; fi
         result.push(
           <span
             key={i}
-            className="inline-block bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300 px-1.5 py-0.5 rounded text-xs font-medium mx-0.5"
+            className="inline-block bg-amber-500/20 text-amber-300 px-1.5 py-0.5 rounded text-xs font-medium mx-0.5"
           >
             {fullSlice.join('')}
           </span>
@@ -251,7 +251,7 @@ function HighlightedTranscript({ transcript, fillers }: { transcript: string; fi
         result.push(
           <span
             key={i}
-            className="inline-block bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300 px-1.5 py-0.5 rounded text-xs font-medium mx-0.5"
+            className="inline-block bg-amber-500/20 text-amber-300 px-1.5 py-0.5 rounded text-xs font-medium mx-0.5"
           >
             {word}
           </span>
@@ -264,7 +264,7 @@ function HighlightedTranscript({ transcript, fillers }: { transcript: string; fi
   }
 
   return (
-    <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
+    <p className="text-sm text-light-100 leading-relaxed">
       {result}
     </p>
   );
@@ -313,14 +313,14 @@ const SpeechDashboard: React.FC<SpeechDashboardProps> = ({ data }) => {
         <motion.div
           initial={{ y: 20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
-          className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-2xl p-4 flex items-start gap-3"
+          className="bg-amber-900/20 border border-amber-700/50 rounded-2xl p-4 flex items-start gap-3"
         >
-          <AlertTriangle className="w-5 h-5 text-amber-500 mt-0.5 shrink-0" />
+          <AlertTriangle className="w-5 h-5 text-amber-400 mt-0.5 shrink-0" />
           <div>
-            <p className="text-sm font-medium text-amber-800 dark:text-amber-200">
+            <p className="text-sm font-medium text-amber-200">
               Limited Analysis Available
             </p>
-            <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">
+            <p className="text-xs text-amber-400 mt-1">
               AI evaluation could not be completed. Scores shown are based on deterministic speech metrics only.
               Please try again for full AI-powered analysis.
             </p>
@@ -353,23 +353,26 @@ const SpeechDashboard: React.FC<SpeechDashboardProps> = ({ data }) => {
       {/* Row 1 — 4 Primary Score Gauges */}
       <div className="grid lg:grid-cols-4 md:grid-cols-2 gap-6">
         {([
-          { score: es.technicalAccuracy, label: 'Technical Accuracy', icon: Target },
-          { score: es.behaviouralConfidence, label: 'Behavioural Confidence', icon: Shield },
-          { score: es.communicationClarity, label: 'Communication Clarity', icon: Brain },
-          { score: es.fillerWordFrequency, label: 'Filler Word Score', icon: MessageCircle },
+          { score: es.technicalAccuracy, label: 'Technical Accuracy', icon: Target, accent: 'bg-emerald-500', iconColor: 'text-emerald-500' },
+          { score: es.behaviouralConfidence, label: 'Behavioural Confidence', icon: Shield, accent: 'bg-blue-500', iconColor: 'text-blue-500' },
+          { score: es.communicationClarity, label: 'Communication Clarity', icon: Brain, accent: 'bg-violet-500', iconColor: 'text-violet-500' },
+          { score: es.fillerWordFrequency, label: 'Filler Word Score', icon: MessageCircle, accent: 'bg-amber-500', iconColor: 'text-amber-500' },
         ] as const).map((item, idx) => (
           <motion.div
             key={item.label}
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.1 + idx * 0.08 }}
-            className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm p-6"
+            className="interview-glass overflow-hidden"
           >
-            <h3 className="text-center font-bold text-gray-900 dark:text-white mb-2 text-sm flex items-center justify-center gap-1.5">
-              <item.icon className="w-4 h-4 text-blue-500" />
-              {item.label}
-            </h3>
-            <ScoreGauge score={item.score} label={item.label} />
+            <div className={`h-1 ${item.accent}`} />
+            <div className="p-6">
+              <h3 className="text-center font-bold text-light-100 mb-2 text-sm flex items-center justify-center gap-1.5">
+                <item.icon className={`w-4 h-4 ${item.iconColor}`} />
+                {item.label}
+              </h3>
+              <ScoreGauge score={item.score} label={item.label} />
+            </div>
           </motion.div>
         ))}
       </div>
@@ -381,11 +384,16 @@ const SpeechDashboard: React.FC<SpeechDashboardProps> = ({ data }) => {
           initial={{ y: 20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ delay: 0.4 }}
-          className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm p-6"
+          className="interview-glass overflow-hidden"
         >
-          <h3 className="text-center font-bold text-gray-900 dark:text-white mb-2">Overall Score</h3>
-          <ScoreGauge score={data.overallScore ?? 0} label="Overall" />
-          <p className="text-center text-sm text-gray-500 mt-2">{data.overallVerdict ?? ''}</p>
+          <div className="h-1 bg-gradient-to-r from-blue-500 via-indigo-500 to-violet-500" />
+          <div className="p-6">
+            <p className="text-xs font-bold text-light-400 uppercase tracking-widest text-center mb-1">Overall Score</p>
+            <ScoreGauge score={data.overallScore ?? 0} label="Overall" />
+            {data.overallVerdict && (
+              <p className="text-center text-sm text-light-400 mt-2 font-medium">{data.overallVerdict}</p>
+            )}
+          </div>
         </motion.div>
 
         {/* Stats Grid */}
@@ -410,13 +418,16 @@ const SpeechDashboard: React.FC<SpeechDashboardProps> = ({ data }) => {
         animate={{ y: 0, opacity: 1 }}
         transition={{ delay: 0.55 }}
       >
-        <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">Evaluation Breakdown</h3>
+        <div className="flex items-center gap-3 mb-5">
+          <span className="w-1 h-6 rounded-full bg-gradient-to-b from-blue-500 to-indigo-500 shrink-0" />
+          <h3 className="text-lg font-bold text-white">Evaluation Breakdown</h3>
+        </div>
         <div className="grid lg:grid-cols-2 gap-6">
           {/* Semantic Similarity */}
           <EvaluationMethodCard icon={Brain} title="Semantic Similarity" score={em.semanticSimilarity.score}>
             <p>{em.semanticSimilarity.explanation}</p>
             {em.semanticSimilarity.idealAnswerSummary && (
-              <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">
+              <p className="text-xs text-light-400 mt-1">
                 <span className="font-medium">Ideal answer:</span> {em.semanticSimilarity.idealAnswerSummary}
               </p>
             )}
@@ -440,17 +451,17 @@ const SpeechDashboard: React.FC<SpeechDashboardProps> = ({ data }) => {
             <p>{em.confidenceDetection.explanation}</p>
             {em.confidenceDetection.assertivePatterns.length > 0 && (
               <div className="mt-1">
-                <span className="text-xs font-medium text-green-600 dark:text-green-400">Assertive:</span>
+                <span className="text-xs font-medium text-green-400">Assertive:</span>
                 {em.confidenceDetection.assertivePatterns.map((p, i) => (
-                  <p key={i} className="text-xs italic text-gray-500 dark:text-gray-400 ml-2">&ldquo;{p}&rdquo;</p>
+                  <p key={i} className="text-xs italic text-light-400 ml-2">&ldquo;{p}&rdquo;</p>
                 ))}
               </div>
             )}
             {em.confidenceDetection.hedgingPatterns.length > 0 && (
               <div className="mt-1">
-                <span className="text-xs font-medium text-amber-600 dark:text-amber-400">Hedging:</span>
+                <span className="text-xs font-medium text-amber-400">Hedging:</span>
                 {em.confidenceDetection.hedgingPatterns.map((p, i) => (
-                  <p key={i} className="text-xs italic text-gray-500 dark:text-gray-400 ml-2">&ldquo;{p}&rdquo;</p>
+                  <p key={i} className="text-xs italic text-light-400 ml-2">&ldquo;{p}&rdquo;</p>
                 ))}
               </div>
             )}
@@ -461,10 +472,10 @@ const SpeechDashboard: React.FC<SpeechDashboardProps> = ({ data }) => {
             <div className="flex items-center gap-2 mb-1">
               <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
                 em.sentimentPolarity.polarity === 'positive'
-                  ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300'
+                  ? 'bg-green-500/15 text-green-300'
                   : em.sentimentPolarity.polarity === 'negative'
-                    ? 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300'
-                    : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400'
+                    ? 'bg-red-500/15 text-red-300'
+                    : 'bg-white/10 text-light-400'
               }`}>
                 {em.sentimentPolarity.polarity}
               </span>
@@ -476,19 +487,19 @@ const SpeechDashboard: React.FC<SpeechDashboardProps> = ({ data }) => {
           <EvaluationMethodCard icon={Brain} title="Clarity Breakdown" score={es.communicationClarity} className="lg:col-span-2">
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <p className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Structure</p>
+                <p className="text-xs font-medium text-light-400 mb-1">Structure</p>
                 <ScoreBar score={csm.structureScore} />
               </div>
               <div>
-                <p className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Coherence</p>
+                <p className="text-xs font-medium text-light-400 mb-1">Coherence</p>
                 <ScoreBar score={csm.coherenceScore} />
               </div>
               <div>
-                <p className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Conciseness</p>
+                <p className="text-xs font-medium text-light-400 mb-1">Conciseness</p>
                 <ScoreBar score={csm.conciseness} />
               </div>
               <div>
-                <p className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Vocabulary</p>
+                <p className="text-xs font-medium text-light-400 mb-1">Vocabulary</p>
                 <ScoreBar score={csm.vocabularyAppropriateness} />
               </div>
             </div>
@@ -503,20 +514,23 @@ const SpeechDashboard: React.FC<SpeechDashboardProps> = ({ data }) => {
           initial={{ y: 20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ delay: 0.65 }}
-          className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm p-6"
+          className="interview-glass overflow-hidden"
         >
-          <h3 className="font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
-            <CheckCircle className="w-5 h-5 text-green-500" />
-            Strengths
-          </h3>
-          <ul className="space-y-3">
-            {data.strengths.map((s, i) => (
-              <li key={i} className="flex items-start gap-2 text-sm">
-                <span className="mt-1 w-2 h-2 rounded-full bg-green-500 shrink-0" />
-                <span className="text-gray-700 dark:text-gray-300">{s}</span>
-              </li>
-            ))}
-          </ul>
+          <div className="h-1 bg-green-500" />
+          <div className="p-6">
+            <h3 className="font-bold text-white mb-4 flex items-center gap-2">
+              <CheckCircle className="w-5 h-5 text-green-500" />
+              Strengths
+            </h3>
+            <ul className="space-y-3">
+              {data.strengths.map((s, i) => (
+                <li key={i} className="flex items-start gap-3 text-sm">
+                  <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-green-500 shrink-0" />
+                  <span className="text-light-100 leading-relaxed">{s}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
         </motion.div>
 
         {/* Weaknesses */}
@@ -524,20 +538,23 @@ const SpeechDashboard: React.FC<SpeechDashboardProps> = ({ data }) => {
           initial={{ y: 20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ delay: 0.7 }}
-          className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm p-6"
+          className="interview-glass overflow-hidden"
         >
-          <h3 className="font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
-            <AlertTriangle className="w-5 h-5 text-red-500" />
-            Areas for Improvement
-          </h3>
-          <ul className="space-y-3">
-            {data.weaknesses.map((w, i) => (
-              <li key={i} className="flex items-start gap-2 text-sm">
-                <span className="mt-1 w-2 h-2 rounded-full bg-red-500 shrink-0" />
-                <span className="text-gray-700 dark:text-gray-300">{w}</span>
-              </li>
-            ))}
-          </ul>
+          <div className="h-1 bg-red-500" />
+          <div className="p-6">
+            <h3 className="font-bold text-white mb-4 flex items-center gap-2">
+              <AlertTriangle className="w-5 h-5 text-red-500" />
+              Areas for Improvement
+            </h3>
+            <ul className="space-y-3">
+              {data.weaknesses.map((w, i) => (
+                <li key={i} className="flex items-start gap-3 text-sm">
+                  <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-red-500 shrink-0" />
+                  <span className="text-light-100 leading-relaxed">{w}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
         </motion.div>
 
         {/* Actionable Steps */}
@@ -545,22 +562,25 @@ const SpeechDashboard: React.FC<SpeechDashboardProps> = ({ data }) => {
           initial={{ y: 20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ delay: 0.75 }}
-          className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm p-6"
+          className="interview-glass overflow-hidden"
         >
-          <h3 className="font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
-            <ArrowRight className="w-5 h-5 text-blue-500" />
-            Action Steps
-          </h3>
-          <ol className="space-y-3">
-            {data.actionableSteps.map((step, i) => (
-              <li key={i} className="flex items-start gap-3 text-sm">
-                <span className="mt-0.5 w-6 h-6 rounded-full bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 flex items-center justify-center text-xs font-bold shrink-0">
-                  {i + 1}
-                </span>
-                <span className="text-gray-700 dark:text-gray-300">{step}</span>
-              </li>
-            ))}
-          </ol>
+          <div className="h-1 bg-gradient-to-r from-blue-500 to-indigo-500" />
+          <div className="p-6">
+            <h3 className="font-bold text-white mb-4 flex items-center gap-2">
+              <ArrowRight className="w-5 h-5 text-primary-200" />
+              Action Steps
+            </h3>
+            <ol className="space-y-3">
+              {data.actionableSteps.map((step, i) => (
+                <li key={i} className="flex items-start gap-3 text-sm">
+                  <span className="mt-0.5 w-6 h-6 rounded-full bg-primary-200/15 text-primary-200 flex items-center justify-center text-xs font-bold shrink-0">
+                    {i + 1}
+                  </span>
+                  <span className="text-light-100 leading-relaxed">{step}</span>
+                </li>
+              ))}
+            </ol>
+          </div>
         </motion.div>
       </div>
 
@@ -569,21 +589,27 @@ const SpeechDashboard: React.FC<SpeechDashboardProps> = ({ data }) => {
         initial={{ y: 20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ delay: 0.8 }}
-        className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm p-6"
+        className="interview-glass overflow-hidden"
       >
-        <h3 className="font-bold text-gray-900 dark:text-white mb-4">Transcript</h3>
+        <div className="h-1 bg-gradient-to-r from-white/5 via-white/15 to-white/5" />
+        <div className="p-6">
+        <div className="flex items-center gap-2 mb-4">
+          <span className="w-1 h-5 rounded-full bg-white/25 shrink-0" />
+          <h3 className="font-bold text-white">Transcript</h3>
+        </div>
         <div className="max-h-64 overflow-y-auto pr-2 custom-scrollbar">
           {data.transcript ? (
             <HighlightedTranscript transcript={data.transcript} fillers={data.fillers} />
           ) : (
-            <p className="text-sm text-gray-400 italic">No transcript available.</p>
+            <p className="text-sm text-light-400 italic">No transcript available.</p>
           )}
         </div>
         {data.fillerCount > 0 && (
-          <p className="mt-3 text-xs text-gray-400">
+          <p className="mt-3 text-xs text-light-400">
             Filler words are highlighted in amber. {data.fillerCount} filler word{data.fillerCount !== 1 ? 's' : ''} detected ({(data.fillerFrequency ?? 0).toFixed(1)}/min).
           </p>
         )}
+        </div>
       </motion.div>
     </div>
   );

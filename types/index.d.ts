@@ -36,6 +36,8 @@ interface Interview {
   userId: string;
   type: string;
   finalized: boolean;
+  codingLanguage?: string;
+  codingQuestions?: unknown[];
 }
 
 interface CreateFeedbackParams {

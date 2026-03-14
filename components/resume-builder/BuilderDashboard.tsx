@@ -76,7 +76,6 @@ export default function BuilderDashboard({ resumes, userId }: BuilderDashboardPr
               key={resume.id}
               resume={resume}
               onDeleted={handleChange}
-              onDuplicated={handleChange}
             />
           ))}
         </div>

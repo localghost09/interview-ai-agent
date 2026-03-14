@@ -1,11 +1,10 @@
 'use client';
 
 import { useState } from 'react';
-import { MoreVertical, Edit3, Copy, Trash2, Download, Loader2 } from 'lucide-react';
+import { MoreVertical, Edit3, Trash2, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { toast } from 'sonner';
-import { deleteResume, duplicateResume } from '@/lib/actions/resume-builder.action';
-import { exportResumeToPdf } from '@/lib/resume-builder/pdf-export';
+import { deleteResume } from '@/lib/actions/resume-builder.action';
 import { getTemplate } from '@/lib/resume-builder/template-registry';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
@@ -15,13 +14,11 @@ dayjs.extend(relativeTime);
 interface ResumeCardProps {
   resume: ResumeDocument;
   onDeleted: () => void;
-  onDuplicated: () => void;
 }
 
-export default function ResumeCard({ resume, onDeleted, onDuplicated }: ResumeCardProps) {
+export default function ResumeCard({ resume, onDeleted }: ResumeCardProps) {
   const [showMenu, setShowMenu] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
-  const [isDuplicating, setIsDuplicating] = useState(false);
 
   const templateEntry = getTemplate(resume.templateId);
 
@@ -44,26 +41,47 @@ export default function ResumeCard({ resume, onDeleted, onDuplicated }: ResumeCa
     }
   };
 
-  const handleDuplicate = async () => {
-    setIsDuplicating(true);
-    try {
-      const result = await duplicateResume(resume.id, resume.userId);
-      if (result.success) {
-        toast.success('Resume duplicated');
-        onDuplicated();
-      } else {
-        toast.error(result.message || 'Failed to duplicate');
-      }
-    } catch {
-      toast.error('Failed to duplicate resume');
-    } finally {
-      setIsDuplicating(false);
-      setShowMenu(false);
-    }
-  };
-
   return (
     <div className="interview-glass group relative overflow-hidden">
+      {/* Top actions menu */}
+      <div className="absolute top-3 right-3 z-20">
+        <button
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            setShowMenu(!showMenu);
+          }}
+          className="p-1.5 text-gray-700 hover:text-gray-900 rounded-lg bg-white/90 hover:bg-white transition-colors"
+          aria-label="Resume actions"
+        >
+          <MoreVertical className="w-4 h-4" />
+        </button>
+
+        {showMenu && (
+          <>
+            <div className="fixed inset-0 z-40" onClick={() => setShowMenu(false)} />
+            <div className="absolute right-0 top-8 z-50 w-44 bg-white rounded-lg border border-gray-200 shadow-xl py-1">
+              <Link
+                href={`/resume-builder/${resume.id}/edit`}
+                className="flex items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:text-gray-900 hover:bg-gray-100 transition-colors"
+              >
+                <Edit3 className="w-3.5 h-3.5" />
+                Edit
+              </Link>
+              <hr className="my-1 border-gray-200" />
+              <button
+                onClick={handleDelete}
+                disabled={isDeleting}
+                className="flex items-center gap-2 px-3 py-2 text-sm text-red-600 hover:bg-gray-100 transition-colors w-full"
+              >
+                {isDeleting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Trash2 className="w-3.5 h-3.5" />}
+                Remove
+              </button>
+            </div>
+          </>
+        )}
+      </div>
+
       {/* Template preview area */}
       <Link href={`/resume-builder/${resume.id}/edit`}>
         <div className="h-48 bg-white rounded-t-lg overflow-hidden relative cursor-pointer">
@@ -94,48 +112,6 @@ export default function ResumeCard({ resume, onDeleted, onDuplicated }: ResumeCa
             <p className="text-xs text-light-600 mt-0.5">
               {templateEntry?.name} &middot; Updated {dayjs(resume.updatedAt).fromNow()}
             </p>
-          </div>
-
-          {/* Actions menu */}
-          <div className="relative">
-            <button
-              onClick={() => setShowMenu(!showMenu)}
-              className="p-1.5 text-light-400 hover:text-white rounded-lg hover:bg-gray-700 transition-colors"
-            >
-              <MoreVertical className="w-4 h-4" />
-            </button>
-
-            {showMenu && (
-              <>
-                <div className="fixed inset-0 z-40" onClick={() => setShowMenu(false)} />
-                <div className="absolute right-0 top-8 z-50 w-44 bg-dark-200 rounded-lg border border-gray-700 shadow-xl py-1">
-                  <Link
-                    href={`/resume-builder/${resume.id}/edit`}
-                    className="flex items-center gap-2 px-3 py-2 text-sm text-light-400 hover:text-white hover:bg-gray-700 transition-colors"
-                  >
-                    <Edit3 className="w-3.5 h-3.5" />
-                    Edit
-                  </Link>
-                  <button
-                    onClick={handleDuplicate}
-                    disabled={isDuplicating}
-                    className="flex items-center gap-2 px-3 py-2 text-sm text-light-400 hover:text-white hover:bg-gray-700 transition-colors w-full"
-                  >
-                    {isDuplicating ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Copy className="w-3.5 h-3.5" />}
-                    Duplicate
-                  </button>
-                  <hr className="my-1 border-gray-700" />
-                  <button
-                    onClick={handleDelete}
-                    disabled={isDeleting}
-                    className="flex items-center gap-2 px-3 py-2 text-sm text-destructive-100 hover:bg-gray-700 transition-colors w-full"
-                  >
-                    {isDeleting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Trash2 className="w-3.5 h-3.5" />}
-                    Delete
-                  </button>
-                </div>
-              </>
-            )}
           </div>
         </div>
       </div>

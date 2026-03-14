@@ -2,6 +2,7 @@
 
 import { db } from "@/firebase/admin";
 import { generateQuestions } from "@/lib/serverQuestions";
+import { generateCodingQuestionSet, type CodingLanguage } from "@/lib/codingInterview";
 
 export async function createInterview(params: {
   userId: string;
@@ -45,6 +46,48 @@ export async function createInterview(params: {
   }
 }
 
+export async function createCodingInterview(params: {
+  userId: string;
+  role: string;
+  level: string;
+  language: CodingLanguage;
+}) {
+  const { userId, role, level, language } = params;
+
+  try {
+    const codingQuestions = generateCodingQuestionSet({ role, level, language });
+
+    const interviewData = {
+      userId,
+      role,
+      level,
+      techstack: [language],
+      type: 'Coding',
+      codingLanguage: language,
+      // Serialize to a JSON string to avoid Firestore's nested-array restriction
+      // (DesignTestCase.parameters is unknown[][], which Firestore rejects)
+      codingQuestions: JSON.stringify(codingQuestions),
+      questions: codingQuestions.map((question) => question.title),
+      finalized: false,
+      createdAt: new Date().toISOString(),
+    };
+
+    const docRef = await db.collection('interviews').add(interviewData);
+
+    return {
+      success: true,
+      interviewId: docRef.id,
+      message: 'Coding interview created successfully',
+    };
+  } catch (error) {
+    console.error('Error creating coding interview:', error);
+    return {
+      success: false,
+      message: 'Failed to create coding interview',
+    };
+  }
+}
+
 export async function getInterview(interviewId: string) {
   try {
     const doc = await db.collection('interviews').doc(interviewId).get();
@@ -56,9 +99,18 @@ export async function getInterview(interviewId: string) {
       };
     }
 
+    const data = doc.data()!;
+    // Parse codingQuestions back from JSON string if it was serialized on save
+    if (typeof data.codingQuestions === 'string') {
+      try {
+        data.codingQuestions = JSON.parse(data.codingQuestions);
+      } catch {
+        data.codingQuestions = [];
+      }
+    }
     return {
       success: true,
-      interview: { id: doc.id, ...doc.data() } as Interview
+      interview: { id: doc.id, ...data } as Interview,
     };
 
   } catch (error) {

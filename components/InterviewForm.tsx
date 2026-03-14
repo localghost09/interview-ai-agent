@@ -2,7 +2,8 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { createInterview } from "@/lib/actions/interview.action";
+import { createCodingInterview, createInterview } from "@/lib/actions/interview.action";
+import type { CodingLanguage } from "@/lib/codingInterview";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -15,6 +16,15 @@ const TECH_CATEGORIES: Record<string, string[]> = {
 };
 
 const ALL_TECH = Object.values(TECH_CATEGORIES).flat();
+
+const CODING_LANGUAGES: Array<{ value: CodingLanguage; label: string }> = [
+  { value: "javascript", label: "JavaScript" },
+  { value: "typescript", label: "TypeScript" },
+  { value: "python", label: "Python" },
+  { value: "java", label: "Java" },
+  { value: "cpp", label: "C++" },
+  { value: "c", label: "C" },
+];
 
 const LEVEL_OPTIONS = [
   { value: "Junior", label: "Junior", desc: "0–2 years", icon: "🌱" },
@@ -73,7 +83,8 @@ const InterviewForm = () => {
     role: "",
     level: "Junior",
     type: "Technical",
-    techstack: [] as string[]
+    techstack: [] as string[],
+    codingLanguage: "javascript" as CodingLanguage,
   });
 
   useEffect(() => {
@@ -86,7 +97,14 @@ const InterviewForm = () => {
       setFormData(prev => ({
         ...prev,
         role: role || prev.role,
-        type: type === 'mixed' ? 'Mixed' : type === 'technical' ? 'Technical' : type || prev.type,
+        type:
+          type === 'mixed'
+            ? 'Mixed'
+            : type === 'technical'
+              ? 'Technical'
+              : type === 'coding'
+                ? 'Coding'
+                : type || prev.type,
         level: level ? level.charAt(0).toUpperCase() + level.slice(1) : prev.level,
         techstack: techstack ? techstack.split(',').map(t => t.trim()) : prev.techstack
       }));
@@ -112,18 +130,37 @@ const InterviewForm = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.role.trim()) { toast.error("Please enter a role"); return; }
-    if (formData.techstack.length === 0) { toast.error("Please select at least one technology"); return; }
+    if (formData.type !== 'Coding' && formData.techstack.length === 0) {
+      toast.error("Please select at least one technology");
+      return;
+    }
     if (!currentUser) { toast.error("Please sign in"); router.push('/sign-in'); return; }
 
     setLoading(true);
     try {
-      const result = await createInterview({
-        userId: currentUser, role: formData.role,
-        level: formData.level, techstack: formData.techstack, type: formData.type
-      });
+      const result =
+        formData.type === 'Coding'
+          ? await createCodingInterview({
+              userId: currentUser,
+              role: formData.role,
+              level: formData.level,
+              language: formData.codingLanguage,
+            })
+          : await createInterview({
+              userId: currentUser,
+              role: formData.role,
+              level: formData.level,
+              techstack: formData.techstack,
+              type: formData.type,
+            });
+
       if (result.success) {
         toast.success("Interview created!");
-        router.push(`/interview/${result.interviewId}/questions`);
+        if (formData.type === 'Coding') {
+          router.push(`/coding-interview/${result.interviewId}`);
+        } else {
+          router.push(`/interview/${result.interviewId}/questions`);
+        }
       } else { toast.error(result.message); }
     } catch { toast.error("Failed to create interview"); }
     finally { setLoading(false); }
@@ -189,7 +226,33 @@ const InterviewForm = () => {
         </div>
       </motion.div>
 
+      {formData.type === 'Coding' && (
+        <motion.div variants={fadeUp} initial="hidden" animate="visible" custom={3} className="saas-field-group">
+          <label htmlFor="codingLanguage" className="saas-label">
+            Programming Language
+            <span className="saas-label-hint">Choose the language for your coding interview session</span>
+          </label>
+          <div className="saas-input-wrap">
+            <select
+              id="codingLanguage"
+              className="saas-input"
+              value={formData.codingLanguage}
+              onChange={(e) =>
+                setFormData((prev) => ({ ...prev, codingLanguage: e.target.value as CodingLanguage }))
+              }
+            >
+              {CODING_LANGUAGES.map((lang) => (
+                <option key={lang.value} value={lang.value}>
+                  {lang.label}
+                </option>
+              ))}
+            </select>
+          </div>
+        </motion.div>
+      )}
+
       {/* ── Technologies ─── */}
+      {formData.type !== 'Coding' && (
       <motion.div variants={fadeUp} initial="hidden" animate="visible" custom={3} className="saas-field-group">
         <label className="saas-label">
           Technologies & Skills
@@ -280,6 +343,7 @@ const InterviewForm = () => {
           )}
         </AnimatePresence>
       </motion.div>
+      )}
 
       {/* ── Divider ─── */}
       <div className="saas-divider" />

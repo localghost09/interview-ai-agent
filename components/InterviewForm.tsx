@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { createCodingInterview, createInterview } from "@/lib/actions/interview.action";
 import type { CodingLanguage } from "@/lib/codingInterview";
@@ -25,6 +25,92 @@ const CODING_LANGUAGES: Array<{ value: CodingLanguage; label: string }> = [
   { value: "cpp", label: "C++" },
   { value: "c", label: "C" },
 ];
+
+const ROLE_GROUPS: Array<{ label: string; roles: string[] }> = [
+  {
+    label: "Core Software",
+    roles: [
+      "Software Engineer",
+      "Software Developer",
+      "Application Engineer",
+      "Full Stack Engineer",
+      "Full Stack Developer",
+      "Backend Engineer",
+      "Backend Developer",
+      "Frontend Engineer",
+      "Frontend Developer",
+    ],
+  },
+  {
+    label: "Web & UI",
+    roles: [
+      "React Developer",
+      "Next.js Developer",
+      "UI Engineer",
+      "Web Developer",
+      "JavaScript Engineer",
+      "TypeScript Engineer",
+    ],
+  },
+  {
+    label: "Platform & Cloud",
+    roles: [
+      "Platform Engineer",
+      "DevOps Engineer",
+      "Site Reliability Engineer",
+      "Cloud Engineer",
+      "Infrastructure Engineer",
+      "Build and Release Engineer",
+    ],
+  },
+  {
+    label: "Data & AI",
+    roles: [
+      "Data Engineer",
+      "Machine Learning Engineer",
+      "AI Engineer",
+      "MLOps Engineer",
+      "Data Platform Engineer",
+      "Analytics Engineer",
+    ],
+  },
+  {
+    label: "Mobile & Embedded",
+    roles: [
+      "Mobile Developer",
+      "Android Engineer",
+      "iOS Engineer",
+      "Cross-Platform Developer",
+      "Embedded Software Engineer",
+      "Firmware Engineer",
+    ],
+  },
+  {
+    label: "Quality & Security",
+    roles: [
+      "QA Engineer",
+      "QA Automation Engineer",
+      "Test Engineer",
+      "Security Engineer",
+      "Application Security Engineer",
+      "Penetration Testing Engineer",
+    ],
+  },
+  {
+    label: "Specialized",
+    roles: [
+      "Blockchain Developer",
+      "Game Developer",
+      "AR/VR Engineer",
+      "Robotics Software Engineer",
+      "Solutions Engineer",
+      "Staff Software Engineer",
+      "Principal Software Engineer",
+    ],
+  },
+];
+
+const ALL_ROLES = ROLE_GROUPS.flatMap((group) => group.roles);
 
 const LEVEL_OPTIONS = [
   { value: "Junior", label: "Junior", desc: "0–2 years", icon: "🌱" },
@@ -79,6 +165,8 @@ const InterviewForm = () => {
   const [currentUser, setCurrentUser] = useState<string | null>(null);
   const [techFilter, setTechFilter] = useState("");
   const [activeCategory, setActiveCategory] = useState("Frontend");
+  const [isRoleMenuOpen, setIsRoleMenuOpen] = useState(false);
+  const roleMenuRef = useRef<HTMLDivElement | null>(null);
   const [formData, setFormData] = useState({
     role: "",
     level: "Junior",
@@ -111,12 +199,47 @@ const InterviewForm = () => {
     }
   }, [searchParams]);
 
+  useEffect(() => {
+    const handleDocumentClick = (event: MouseEvent) => {
+      const target = event.target as Node;
+      if (roleMenuRef.current && !roleMenuRef.current.contains(target)) {
+        setIsRoleMenuOpen(false);
+      }
+    };
+
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setIsRoleMenuOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleDocumentClick);
+    document.addEventListener("keydown", handleEscape);
+
+    return () => {
+      document.removeEventListener("mousedown", handleDocumentClick);
+      document.removeEventListener("keydown", handleEscape);
+    };
+  }, []);
+
   const filteredTech = useMemo(() => {
     if (techFilter) {
       return ALL_TECH.filter(t => t.toLowerCase().includes(techFilter.toLowerCase()));
     }
     return TECH_CATEGORIES[activeCategory] || [];
   }, [techFilter, activeCategory]);
+
+  const estimatedDuration = useMemo(() => {
+    if (formData.type === "Coding") return "40-55 min";
+    if (formData.type === "Mixed") return "30-40 min";
+    if (formData.type === "Behavioral") return "20-30 min";
+    return "25-35 min";
+  }, [formData.type]);
+
+  const hasPresetCustomRole = useMemo(() => {
+    const role = formData.role.trim();
+    return role.length > 0 && !ALL_ROLES.includes(role);
+  }, [formData.role]);
 
   const handleTechToggle = (tech: string) => {
     setFormData(prev => ({
@@ -172,26 +295,80 @@ const InterviewForm = () => {
       <motion.div variants={fadeUp} initial="hidden" animate="visible" custom={0} className="saas-field-group">
         <label htmlFor="role" className="saas-label">
           Job Role
-          <span className="saas-label-hint">What position are you targeting?</span>
+          <span className="saas-label-hint">Title you are preparing to interview for</span>
         </label>
-        <div className="saas-input-wrap">
+        <div className="saas-input-wrap" ref={roleMenuRef}>
           <svg className="saas-input-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M20.25 14.15v4.25c0 1.094-.787 2.036-1.872 2.18-2.087.277-4.216.42-6.378.42s-4.291-.143-6.378-.42c-1.085-.144-1.872-1.086-1.872-2.18v-4.25m16.5 0a2.18 2.18 0 0 0 .75-1.661V8.706c0-1.081-.768-2.015-1.837-2.175a48.114 48.114 0 0 0-3.413-.387m4.5 8.006c-.194.165-.42.295-.673.38A23.978 23.978 0 0 1 12 15.75c-2.648 0-5.195-.429-7.577-1.22a2.016 2.016 0 0 1-.673-.38m0 0A2.18 2.18 0 0 1 3 12.489V8.706c0-1.081.768-2.015 1.837-2.175a48.111 48.111 0 0 1 3.413-.387m7.5 0V5.25A2.25 2.25 0 0 0 13.5 3h-3a2.25 2.25 0 0 0-2.25 2.25v.894m7.5 0a48.667 48.667 0 0 0-7.5 0" />
           </svg>
-          <input
+          <button
+            type="button"
             id="role"
-            type="text"
-            placeholder="e.g. Frontend Developer, DevOps Engineer"
-            value={formData.role}
-            onChange={(e) => setFormData(prev => ({ ...prev, role: e.target.value }))}
-            className="saas-input"
-          />
+            className="saas-input saas-role-trigger"
+            onClick={() => setIsRoleMenuOpen((prev) => !prev)}
+            aria-haspopup="listbox"
+            aria-expanded={isRoleMenuOpen}
+          >
+            <span className={`saas-role-trigger-text ${formData.role ? "saas-role-trigger-text-filled" : ""}`}>
+              {formData.role || "Select your target role"}
+            </span>
+          </button>
+          <svg className="saas-select-arrow" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+          </svg>
+
+          <AnimatePresence>
+            {isRoleMenuOpen && (
+              <motion.div
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 6 }}
+                transition={{ duration: 0.18 }}
+                className="saas-role-menu"
+                role="listbox"
+                aria-labelledby="role"
+              >
+                {hasPresetCustomRole && (
+                  <button
+                    type="button"
+                    className="saas-role-option saas-role-option-active"
+                    onClick={() => setIsRoleMenuOpen(false)}
+                  >
+                    {formData.role} (preset)
+                  </button>
+                )}
+                {ROLE_GROUPS.map((group) => (
+                  <div key={group.label} className="saas-role-group">
+                    <p className="saas-role-group-label">{group.label}</p>
+                    <div className="saas-role-group-items">
+                      {group.roles.map((role) => (
+                        <button
+                          key={role}
+                          type="button"
+                          className={`saas-role-option ${formData.role === role ? "saas-role-option-active" : ""}`}
+                          onClick={() => {
+                            setFormData((prev) => ({ ...prev, role }));
+                            setIsRoleMenuOpen(false);
+                          }}
+                        >
+                          {role}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </motion.div>
 
       {/* ── Experience Level ─── */}
       <motion.div variants={fadeUp} initial="hidden" animate="visible" custom={1} className="saas-field-group">
-        <label className="saas-label">Experience Level</label>
+        <label className="saas-label">
+          Experience Level
+          <span className="saas-label-hint">Difficulty and expectations align to this level</span>
+        </label>
         <div className="saas-level-grid">
           {LEVEL_OPTIONS.map((opt) => (
             <button
@@ -210,7 +387,10 @@ const InterviewForm = () => {
 
       {/* ── Interview Type ─── */}
       <motion.div variants={fadeUp} initial="hidden" animate="visible" custom={2} className="saas-field-group">
-        <label className="saas-label">Interview Type</label>
+        <label className="saas-label">
+          Interview Mode
+          <span className="saas-label-hint">Pick the focus area for this run</span>
+        </label>
         <div className="saas-type-grid">
           {TYPE_OPTIONS.map((opt) => (
             <button
@@ -230,12 +410,12 @@ const InterviewForm = () => {
         <motion.div variants={fadeUp} initial="hidden" animate="visible" custom={3} className="saas-field-group">
           <label htmlFor="codingLanguage" className="saas-label">
             Programming Language
-            <span className="saas-label-hint">Choose the language for your coding interview session</span>
+            <span className="saas-label-hint">Problems and test cases will use this language</span>
           </label>
           <div className="saas-input-wrap">
             <select
               id="codingLanguage"
-              className="saas-input"
+              className="saas-input saas-select"
               value={formData.codingLanguage}
               onChange={(e) =>
                 setFormData((prev) => ({ ...prev, codingLanguage: e.target.value as CodingLanguage }))
@@ -247,6 +427,9 @@ const InterviewForm = () => {
                 </option>
               ))}
             </select>
+            <svg className="saas-select-arrow" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+            </svg>
           </div>
         </motion.div>
       )}
@@ -256,7 +439,7 @@ const InterviewForm = () => {
       <motion.div variants={fadeUp} initial="hidden" animate="visible" custom={3} className="saas-field-group">
         <label className="saas-label">
           Technologies & Skills
-          <span className="saas-label-hint">Search or browse by category</span>
+          <span className="saas-label-hint">Select the stack you want interviewers to probe</span>
         </label>
 
         {/* Search */}
@@ -266,7 +449,7 @@ const InterviewForm = () => {
           </svg>
           <input
             type="text"
-            placeholder="Search technologies..."
+            placeholder="Find tools, frameworks, and platforms"
             value={techFilter}
             onChange={(e) => setTechFilter(e.target.value)}
             className="saas-input"
@@ -345,11 +528,40 @@ const InterviewForm = () => {
       </motion.div>
       )}
 
+      <motion.div variants={fadeUp} initial="hidden" animate="visible" custom={4} className="saas-live-summary">
+        <div className="saas-live-summary-head">
+          <p className="saas-live-summary-title">Session Preview</p>
+          <span className="saas-live-summary-pill">{estimatedDuration}</span>
+        </div>
+        <div className="saas-live-summary-grid">
+          <div className="saas-live-summary-item">
+            <p className="saas-summary-label">Role</p>
+            <p className="saas-summary-value">{formData.role.trim() || "Not set yet"}</p>
+          </div>
+          <div className="saas-live-summary-item">
+            <p className="saas-summary-label">Level</p>
+            <p className="saas-summary-value">{formData.level}</p>
+          </div>
+          <div className="saas-live-summary-item">
+            <p className="saas-summary-label">Mode</p>
+            <p className="saas-summary-value">{formData.type}</p>
+          </div>
+          <div className="saas-live-summary-item">
+            <p className="saas-summary-label">Focus</p>
+            <p className="saas-summary-value">
+              {formData.type === "Coding"
+                ? CODING_LANGUAGES.find((lang) => lang.value === formData.codingLanguage)?.label
+                : `${formData.techstack.length} selected`}
+            </p>
+          </div>
+        </div>
+      </motion.div>
+
       {/* ── Divider ─── */}
       <div className="saas-divider" />
 
       {/* ── Submit ─── */}
-      <motion.div variants={fadeUp} initial="hidden" animate="visible" custom={4}>
+      <motion.div variants={fadeUp} initial="hidden" animate="visible" custom={5}>
         <button type="submit" className="saas-submit" disabled={loading}>
           {loading ? (
             <span className="flex items-center justify-center gap-2.5">
@@ -358,7 +570,7 @@ const InterviewForm = () => {
             </span>
           ) : (
             <span className="saas-submit-content">
-              <span>✨ Create AI Interview</span>
+              <span>Launch Interview Session</span>
               <svg className="saas-submit-arrow" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
               </svg>

@@ -1,6 +1,6 @@
 import { Metadata } from "next";
 import Link from "next/link";
-import { ArrowLeft, HelpCircle, MessageCircle, Book, Zap, BarChart3, Settings } from "lucide-react";
+import { ArrowLeft, HelpCircle, MessageCircle, Book, Zap, BarChart3, Settings, Sparkles } from "lucide-react";
 
 export const metadata: Metadata = {
   title: "Help Center | AI MockPrep",
@@ -96,60 +96,69 @@ export default function HelpPage() {
   ];
 
   return (
-    <>
+    <div className="relative overflow-hidden">
+      <div className="pointer-events-none absolute -left-16 top-4 h-64 w-64 rounded-full bg-indigo-500/20 blur-3xl" />
+      <div className="pointer-events-none absolute -right-16 top-40 h-72 w-72 rounded-full bg-blue-500/20 blur-3xl" />
+
       {/* Header */}
-      <div className="mb-8">
+      <div className="relative mb-10 rounded-3xl border border-white/10 bg-gradient-to-br from-[#161728] via-[#1d1f35] to-[#111320] px-6 py-10 md:px-10 md:py-14">
         <Link
           href="/"
-          className="inline-flex items-center gap-2 text-blue-400 hover:text-blue-300 transition-colors mb-6"
+          className="mb-6 inline-flex items-center gap-2 text-blue-300 transition-colors hover:text-blue-200"
         >
-          <ArrowLeft className="w-4 h-4" />
+          <ArrowLeft className="h-4 w-4" />
           Back to Home
         </Link>
-        <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
-          Help Center
-        </h1>
-        <p className="text-xl text-gray-300 leading-relaxed">
-          Find answers to common questions and learn how to get the most out of AI MockPrep.
+
+        <div className="inline-flex items-center gap-2 rounded-full border border-primary-200/25 bg-primary-200/10 px-4 py-1.5 text-xs font-medium text-primary-100">
+          <Sparkles className="h-3.5 w-3.5" />
+          Answers in one place
+        </div>
+
+        <h1 className="mt-4 text-4xl font-extrabold text-white md:text-5xl">Help Center</h1>
+        <p className="mt-3 max-w-3xl text-base leading-relaxed text-gray-300 md:text-lg">
+          Find quick answers, platform guidance, and troubleshooting tips to get the most out of AI MockPrep.
         </p>
       </div>
 
       {/* Quick Actions */}
-      <div className="grid md:grid-cols-3 gap-6 mb-12">
+      <div className="mb-12 grid gap-6 md:grid-cols-3">
         <Link
           href="/contact"
-          className="bg-gradient-to-r from-blue-600 to-blue-700 rounded-xl p-6 hover:from-blue-700 hover:to-blue-800 transition-all group"
+          className="group rounded-2xl border border-blue-400/20 bg-gradient-to-r from-blue-600/80 to-blue-700/80 p-6 transition-all hover:from-blue-500 hover:to-blue-600"
         >
-          <MessageCircle className="w-8 h-8 text-white mb-3 group-hover:scale-110 transition-transform" />
-          <h3 className="text-white font-semibold mb-2">Contact Support</h3>
+          <MessageCircle className="mb-3 h-8 w-8 text-white transition-transform group-hover:scale-110" />
+          <h3 className="mb-2 font-semibold text-white">Contact Support</h3>
           <p className="text-blue-100 text-sm">Get personalized help from our team</p>
         </Link>
 
         <Link
           href="/interview"
-          className="bg-gradient-to-r from-green-600 to-green-700 rounded-xl p-6 hover:from-green-700 hover:to-green-800 transition-all group"
+          className="group rounded-2xl border border-emerald-400/20 bg-gradient-to-r from-emerald-600/80 to-emerald-700/80 p-6 transition-all hover:from-emerald-500 hover:to-emerald-600"
         >
-          <Zap className="w-8 h-8 text-white mb-3 group-hover:scale-110 transition-transform" />
-          <h3 className="text-white font-semibold mb-2">Start Interview</h3>
+          <Zap className="mb-3 h-8 w-8 text-white transition-transform group-hover:scale-110" />
+          <h3 className="mb-2 font-semibold text-white">Start Interview</h3>
           <p className="text-green-100 text-sm">Jump right into a practice session</p>
         </Link>
 
         <Link
           href="/about"
-          className="bg-gradient-to-r from-purple-600 to-purple-700 rounded-xl p-6 hover:from-purple-700 hover:to-purple-800 transition-all group"
+          className="group rounded-2xl border border-violet-400/20 bg-gradient-to-r from-violet-600/80 to-violet-700/80 p-6 transition-all hover:from-violet-500 hover:to-violet-600"
         >
-          <Book className="w-8 h-8 text-white mb-3 group-hover:scale-110 transition-transform" />
-          <h3 className="text-white font-semibold mb-2">Learn More</h3>
+          <Book className="mb-3 h-8 w-8 text-white transition-transform group-hover:scale-110" />
+          <h3 className="mb-2 font-semibold text-white">Learn More</h3>
           <p className="text-purple-100 text-sm">Discover platform features and benefits</p>
         </Link>
       </div>
 
       {/* FAQ Sections */}
-      <div className="space-y-8">
+      <div className="space-y-10">
         {faqs.map((category, categoryIndex) => (
-          <div key={categoryIndex}>
-            <div className="flex items-center gap-3 mb-6">
-              <category.icon className="w-6 h-6 text-blue-400" />
+          <section key={categoryIndex} className="rounded-2xl border border-white/10 bg-gray-900/45 p-6 md:p-8">
+            <div className="mb-6 flex items-center gap-3">
+              <div className="rounded-lg border border-blue-400/30 bg-blue-500/10 p-2">
+                <category.icon className="h-5 w-5 text-blue-300" />
+              </div>
               <h2 className="text-2xl font-bold text-white">{category.category}</h2>
             </div>
             
@@ -157,13 +166,13 @@ export default function HelpPage() {
               {category.questions.map((faq, faqIndex) => (
                 <details
                   key={faqIndex}
-                  className="bg-gray-800/50 rounded-xl p-6 group [&[open]]:bg-gray-800/70 transition-all"
+                  className="group rounded-xl border border-white/10 bg-gray-800/45 p-6 transition-all [&[open]]:border-blue-400/35 [&[open]]:bg-gray-800/70"
                 >
                   <summary className="cursor-pointer list-none flex items-center justify-between">
                     <h3 className="text-lg font-semibold text-white group-hover:text-blue-300 transition-colors">
                       {faq.q}
                     </h3>
-                    <HelpCircle className="w-5 h-5 text-gray-400 group-hover:text-blue-400 transition-colors group-open:rotate-180" />
+                    <HelpCircle className="h-5 w-5 text-gray-400 transition-colors group-hover:text-blue-300 group-open:rotate-180" />
                   </summary>
                   <div className="mt-4 pt-4 border-t border-gray-700">
                     <p className="text-gray-300 leading-relaxed">{faq.a}</p>
@@ -171,16 +180,16 @@ export default function HelpPage() {
                 </details>
               ))}
             </div>
-          </div>
+          </section>
         ))}
       </div>
 
       {/* Additional Resources */}
-      <div className="mt-12 bg-gradient-to-r from-gray-800 to-gray-900 rounded-2xl p-8">
-        <h2 className="text-2xl font-bold text-white mb-6">Additional Resources</h2>
-        <div className="grid md:grid-cols-2 gap-6">
+      <div className="mt-12 rounded-2xl border border-white/10 bg-gradient-to-r from-gray-800 to-gray-900 p-8">
+        <h2 className="mb-6 text-2xl font-bold text-white">Additional Resources</h2>
+        <div className="grid gap-6 md:grid-cols-2">
           <div>
-            <h3 className="text-lg font-semibold text-white mb-3">Interview Tips</h3>
+            <h3 className="mb-3 text-lg font-semibold text-white">Interview Tips</h3>
             <ul className="text-gray-300 space-y-2 list-disc list-inside text-sm">
               <li>Practice speaking your answers out loud for better fluency</li>
               <li>Use the STAR method for behavioral questions (Situation, Task, Action, Result)</li>
@@ -190,7 +199,7 @@ export default function HelpPage() {
             </ul>
           </div>
           <div>
-            <h3 className="text-lg font-semibold text-white mb-3">Platform Features</h3>
+            <h3 className="mb-3 text-lg font-semibold text-white">Platform Features</h3>
             <ul className="text-gray-300 space-y-2 list-disc list-inside text-sm">
               <li>Voice recording with automatic transcription</li>
               <li>Personalized questions based on your tech stack</li>
@@ -203,26 +212,26 @@ export default function HelpPage() {
       </div>
 
       {/* Contact CTA */}
-      <div className="mt-12 bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl p-8 text-center">
-        <h2 className="text-2xl font-bold text-white mb-4">Still Need Help?</h2>
-        <p className="text-blue-100 mb-6">
+      <div className="mt-12 rounded-2xl border border-blue-400/20 bg-gradient-to-r from-blue-600 to-purple-600 p-8 text-center">
+        <h2 className="mb-4 text-2xl font-bold text-white">Still Need Help?</h2>
+        <p className="mb-6 text-blue-100">
           Our support team is here to help you succeed. Don&apos;t hesitate to reach out with any questions.
         </p>
-        <div className="flex gap-4 justify-center flex-wrap">
+        <div className="flex flex-wrap justify-center gap-4">
           <Link
             href="/contact"
-            className="bg-white text-blue-600 px-6 py-3 rounded-full font-semibold hover:bg-gray-100 transition-colors"
+            className="rounded-full bg-white px-6 py-3 font-semibold text-blue-600 transition-colors hover:bg-gray-100"
           >
             Contact Support
           </Link>
           <a
-            href="mailto:support@aimockprep.com"
-            className="border border-white text-white px-6 py-3 rounded-full font-semibold hover:bg-white/10 transition-colors"
+            href="mailto:localghost678@gmail.com"
+            className="rounded-full border border-white px-6 py-3 font-semibold text-white transition-colors hover:bg-white/10"
           >
-            support@aimockprep.com
+            localghost678@gmail.com
           </a>
         </div>
       </div>
-    </>
+    </div>
   );
 }

@@ -3,11 +3,13 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { useState, useEffect } from 'react';
-import { Menu, X, User, Home, LogOut, Settings, ChevronDown, Mic, PenTool, Search, Code2 } from 'lucide-react';
+import { Menu, X, User, Home, LogOut, Settings, ChevronDown, Mic, PenTool, Search, Code2, FileText } from 'lucide-react';
 
 export default function Navigation() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const [isResumeOpen, setIsResumeOpen] = useState(false);
+  const [isMobileResumeOpen, setIsMobileResumeOpen] = useState(false);
   const [currentUser, setCurrentUser] = useState<{uid: string; email: string; name: string; photoURL?: string} | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -74,12 +76,19 @@ export default function Navigation() {
     setIsProfileOpen(!isProfileOpen);
   };
 
+  const toggleResume = () => {
+    setIsResumeOpen(!isResumeOpen);
+  };
+
   // Close profile dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       const target = event.target as HTMLElement;
       if (!target.closest('.profile-dropdown')) {
         setIsProfileOpen(false);
+      }
+      if (!target.closest('.resume-dropdown')) {
+        setIsResumeOpen(false);
       }
     };
 
@@ -106,20 +115,38 @@ export default function Navigation() {
               <Home className="w-4 h-4" />
               Home
             </Link>
-            <Link
-              href="/resume"
-              className="flex items-center gap-2 text-gray-300 hover:text-white transition-colors"
-            >
-              <Search className="w-4 h-4" />
-              Resume Analyzer
-            </Link>
-            <Link
-              href="/resume-builder"
-              className="flex items-center gap-2 text-gray-300 hover:text-white transition-colors"
-            >
-              <PenTool className="w-4 h-4" />
-              Resume Builder
-            </Link>
+            <div className="relative resume-dropdown">
+              <button
+                type="button"
+                onClick={toggleResume}
+                className={`flex items-center gap-2 px-3 py-1.5 rounded-lg transition-all ${isResumeOpen ? 'text-white bg-gray-800 border border-gray-700' : 'text-gray-300 hover:text-white hover:bg-gray-800/70 border border-transparent'}`}
+              >
+                <FileText className="w-4 h-4" />
+                Resume
+                <ChevronDown className={`w-4 h-4 transition-transform ${isResumeOpen ? 'rotate-180' : ''}`} />
+              </button>
+
+              {isResumeOpen && (
+                <div className="absolute left-0 mt-2 w-56 bg-gray-900/95 backdrop-blur-xl rounded-xl shadow-2xl border border-indigo-400/20 z-50 p-2">
+                  <Link
+                    href="/resume"
+                    className="group flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-300 hover:bg-indigo-500/10 hover:text-white transition-colors border border-transparent hover:border-indigo-400/25"
+                    onClick={() => setIsResumeOpen(false)}
+                  >
+                    <Search className="w-4 h-4 text-gray-400 group-hover:text-primary-100" />
+                    <span className="text-sm font-medium">Resume Analyzer</span>
+                  </Link>
+                  <Link
+                    href="/resume-builder"
+                    className="group flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-300 hover:bg-indigo-500/10 hover:text-white transition-colors border border-transparent hover:border-indigo-400/25"
+                    onClick={() => setIsResumeOpen(false)}
+                  >
+                    <PenTool className="w-4 h-4 text-gray-400 group-hover:text-primary-100" />
+                    <span className="text-sm font-medium">Resume Builder</span>
+                  </Link>
+                </div>
+              )}
+            </div>
             <Link
               href="/speech-analytics"
               className="flex items-center gap-2 text-gray-300 hover:text-white transition-colors"
@@ -247,22 +274,45 @@ export default function Navigation() {
                 <Home className="w-4 h-4" />
                 Home
               </Link>
-              <Link
-                href="/resume"
-                className="flex items-center gap-2 text-gray-300 hover:text-white px-3 py-2 rounded-md transition-colors"
-                onClick={() => setIsMenuOpen(false)}
+              <button
+                type="button"
+                className={`flex items-center justify-between gap-2 w-full text-gray-300 hover:text-white px-3 py-2 rounded-md transition-colors ${isMobileResumeOpen ? 'bg-gray-700/50 text-white' : ''}`}
+                onClick={() => {
+                  setIsMobileResumeOpen((prev) => !prev);
+                }}
               >
-                <Search className="w-4 h-4" />
-                Resume Analyzer
-              </Link>
-              <Link
-                href="/resume-builder"
-                className="flex items-center gap-2 text-gray-300 hover:text-white px-3 py-2 rounded-md transition-colors"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                <PenTool className="w-4 h-4" />
-                Resume Builder
-              </Link>
+                <span className="flex items-center gap-2">
+                  <FileText className="w-4 h-4" />
+                  Resume
+                </span>
+                <ChevronDown className={`w-4 h-4 transition-transform ${isMobileResumeOpen ? 'rotate-180' : ''}`} />
+              </button>
+              {isMobileResumeOpen && (
+                <div className="ml-5 mr-2 mt-1 space-y-1 rounded-lg border border-gray-700/70 bg-gray-900/55 p-2">
+                  <Link
+                    href="/resume"
+                    className="group flex items-center gap-2 text-gray-300 hover:text-white px-2.5 py-2 rounded-md transition-colors hover:bg-indigo-500/10"
+                    onClick={() => {
+                      setIsMenuOpen(false);
+                      setIsMobileResumeOpen(false);
+                    }}
+                  >
+                    <Search className="w-4 h-4" />
+                    <span className="text-sm">Resume Analyzer</span>
+                  </Link>
+                  <Link
+                    href="/resume-builder"
+                    className="group flex items-center gap-2 text-gray-300 hover:text-white px-2.5 py-2 rounded-md transition-colors hover:bg-indigo-500/10"
+                    onClick={() => {
+                      setIsMenuOpen(false);
+                      setIsMobileResumeOpen(false);
+                    }}
+                  >
+                    <PenTool className="w-4 h-4" />
+                    <span className="text-sm">Resume Builder</span>
+                  </Link>
+                </div>
+              )}
               <Link
                 href="/speech-analytics"
                 className="flex items-center gap-2 text-gray-300 hover:text-white px-3 py-2 rounded-md transition-colors"

@@ -52,7 +52,7 @@ export default function ContactPage() {
           <p className="mb-4 text-sm leading-relaxed text-blue-100">General inquiries and support</p>
           <a
             href="mailto:localghost678@gmail.com"
-            className="mt-auto inline-block text-sm font-medium leading-relaxed text-white hover:underline break-all"
+            className="mt-auto inline-block w-full whitespace-nowrap text-[12px] font-medium leading-relaxed tracking-tight text-white hover:underline"
           >
             localghost678@gmail.com
           </a>
@@ -101,10 +101,15 @@ export default function ContactPage() {
             <div className="space-y-4">
               <div className="flex items-start gap-3">
                 <Mail className="mt-0.5 h-5 w-5 flex-shrink-0 text-blue-400" />
-                <div>
-                  <p className="text-white font-medium">Email</p>
-                  <p className="text-gray-300 text-sm break-all">localghost678@gmail.com</p>
-                  <p className="text-gray-300 text-sm">For all inquiries and support</p>
+                <div className="min-w-0">
+                  <p className="font-medium leading-none text-white">Email</p>
+                  <a
+                    href="mailto:localghost678@gmail.com"
+                    className="mt-1 block w-full whitespace-nowrap text-[13px] leading-5 tracking-tight text-gray-200 transition-colors hover:text-white"
+                  >
+                    localghost678@gmail.com
+                  </a>
+                  <p className="mt-1 text-sm leading-5 text-gray-300">For all inquiries and support</p>
                 </div>
               </div>
               <div className="flex items-start gap-3">

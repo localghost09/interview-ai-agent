@@ -102,17 +102,18 @@ export default function HelpPage() {
 
       {/* Header */}
       <div className="relative mb-10 rounded-3xl border border-white/10 bg-gradient-to-br from-[#161728] via-[#1d1f35] to-[#111320] px-6 py-10 md:px-10 md:py-14">
-        <Link
-          href="/"
-          className="mb-6 inline-flex items-center gap-2 text-blue-300 transition-colors hover:text-blue-200"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          Back to Home
-        </Link>
-
-        <div className="inline-flex items-center gap-2 rounded-full border border-primary-200/25 bg-primary-200/10 px-4 py-1.5 text-xs font-medium text-primary-100">
-          <Sparkles className="h-3.5 w-3.5" />
-          Answers in one place
+        <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
+          <Link
+            href="/"
+            className="inline-flex items-center gap-2 text-blue-300 transition-colors hover:text-blue-200"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Back to Home
+          </Link>
+          <div className="inline-flex items-center gap-2 rounded-full border border-primary-200/25 bg-primary-200/10 px-4 py-1.5 text-xs font-medium text-primary-100">
+            <Sparkles className="h-3.5 w-3.5" />
+            Answers in one place
+          </div>
         </div>
 
         <h1 className="mt-4 text-4xl font-extrabold text-white md:text-5xl">Help Center</h1>
@@ -226,7 +227,7 @@ export default function HelpPage() {
           </Link>
           <a
             href="mailto:localghost678@gmail.com"
-            className="rounded-full border border-white px-6 py-3 font-semibold text-white transition-colors hover:bg-white/10"
+            className="whitespace-nowrap rounded-full border border-white px-6 py-3 font-semibold text-white transition-colors hover:bg-white/10"
           >
             localghost678@gmail.com
           </a>

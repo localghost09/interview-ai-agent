@@ -4,11 +4,30 @@ import { requireAuth } from "@/lib/auth";
 // Force dynamic rendering
 export const dynamic = 'force-dynamic';
 
+const motivationQuotes = [
+  {
+    quote: "Success is stumbling from failure to failure with no loss of enthusiasm.",
+    author: "Winston Churchill",
+  },
+  {
+    quote: "Our greatest glory is not in never falling, but in rising every time we fall.",
+    author: "Confucius",
+  },
+  {
+    quote: "I have not failed. I've just found 10,000 ways that won't work.",
+    author: "Thomas A. Edison",
+  },
+  {
+    quote: "It does not matter how slowly you go as long as you do not stop.",
+    author: "Confucius",
+  },
+];
+
 const InterviewPage = async () => {
   await requireAuth();
 
   return (
-    <div className="saas-interview-page">
+    <div className="saas-interview-page saas-theme-13">
       {/* Ambient background effects */}
       <div className="saas-bg-glow saas-bg-glow-1" />
       <div className="saas-bg-glow saas-bg-glow-2" />
@@ -16,30 +35,25 @@ const InterviewPage = async () => {
       <div className="saas-grid-overlay" />
 
       <div className="saas-container">
-        {/* ─── Left Hero Column ─── */}
+        {/* ─── Left Story Column ─── */}
         <div className="saas-hero">
           <div className="saas-hero-inner">
-            {/* Status badge */}
             <div className="saas-status-badge">
               <span className="saas-status-dot" />
-              <span>Ready to practice</span>
+              <span>Interview Lab is ready</span>
             </div>
 
-            {/* Main heading */}
             <h1 className="saas-heading">
-              Your{" "}
-              <span className="saas-gradient-text">AI-Powered</span>
-              <br />
-              Mock Interview
+              Build a
+              <span className="saas-gradient-text"> focused session </span>
+              before you hit start
             </h1>
 
             <p className="saas-subheading">
-              Practice with an adaptive AI that tailors questions to your role,
-              experience, and tech stack. Get instant, actionable feedback to ace
-              your real interviews.
+              Configure role, level, interview style, and skills in under a minute.
+              Your plan is tuned for realistic pacing and high-signal feedback.
             </p>
 
-            {/* Progress steps */}
             <div className="saas-progress">
               <div className="saas-progress-track">
                 <div className="saas-progress-fill" />
@@ -48,38 +62,103 @@ const InterviewPage = async () => {
                 <div className="saas-progress-step active">
                   <div className="saas-step-number">1</div>
                   <div>
-                    <p className="saas-step-label">Configure</p>
-                    <p className="saas-step-sublabel">Role & tech stack</p>
+                    <p className="saas-step-label">Blueprint</p>
+                    <p className="saas-step-sublabel">Role, level, stack</p>
                   </div>
                 </div>
                 <div className="saas-progress-step">
                   <div className="saas-step-number">2</div>
                   <div>
-                    <p className="saas-step-label">Practice</p>
-                    <p className="saas-step-sublabel">AI interview session</p>
+                    <p className="saas-step-label">Simulation</p>
+                    <p className="saas-step-sublabel">Adaptive questioning</p>
                   </div>
                 </div>
                 <div className="saas-progress-step">
                   <div className="saas-step-number">3</div>
                   <div>
-                    <p className="saas-step-label">Improve</p>
-                    <p className="saas-step-sublabel">Review & feedback</p>
+                    <p className="saas-step-label">Debrief</p>
+                    <p className="saas-step-sublabel">Actionable next steps</p>
                   </div>
                 </div>
               </div>
             </div>
 
-            {/* Social proof */}
+            <div className="saas-kpi-grid">
+              <div className="saas-kpi-card">
+                <p className="saas-kpi-value">18 min</p>
+                <p className="saas-kpi-label">avg setup + run</p>
+              </div>
+              <div className="saas-kpi-card">
+                <p className="saas-kpi-value">4 modes</p>
+                <p className="saas-kpi-label">technical to coding</p>
+              </div>
+              <div className="saas-kpi-card">
+                <p className="saas-kpi-value">Realtime</p>
+                <p className="saas-kpi-label">adaptive flow control</p>
+              </div>
+            </div>
+
             <div className="saas-social-proof">
               <div className="saas-avatars">
-                <div className="saas-avatar" style={{ background: 'linear-gradient(135deg, #7c6fff, #5b4cd4)' }}>J</div>
-                <div className="saas-avatar" style={{ background: 'linear-gradient(135deg, #10b981, #059669)' }}>A</div>
-                <div className="saas-avatar" style={{ background: 'linear-gradient(135deg, #f59e0b, #d97706)' }}>M</div>
-                <div className="saas-avatar" style={{ background: 'linear-gradient(135deg, #ef4444, #dc2626)' }}>S</div>
+                <div className="saas-avatar" style={{ background: 'linear-gradient(135deg, #0ea5e9, #0369a1)' }}>K</div>
+                <div className="saas-avatar" style={{ background: 'linear-gradient(135deg, #10b981, #047857)' }}>R</div>
+                <div className="saas-avatar" style={{ background: 'linear-gradient(135deg, #f59e0b, #b45309)' }}>N</div>
+                <div className="saas-avatar" style={{ background: 'linear-gradient(135deg, #f43f5e, #be123c)' }}>T</div>
               </div>
               <p className="saas-social-text">
-                <span className="text-white font-semibold">2,400+</span> engineers practiced this week
+                <span className="text-white font-semibold">2,400+</span> candidates launched sessions this week
               </p>
+            </div>
+
+            <div className="saas-feature-list">
+              <div className="saas-feature-item">
+                <span className="saas-feature-dot" />
+                <p>Question depth calibrated to your chosen seniority.</p>
+              </div>
+              <div className="saas-feature-item">
+                <span className="saas-feature-dot" />
+                <p>Coding mode routes directly to the live coding workspace.</p>
+              </div>
+              <div className="saas-feature-item">
+                <span className="saas-feature-dot" />
+                <p>Tech stack choices shape follow-up and evaluation criteria.</p>
+              </div>
+            </div>
+
+            <div className="saas-bottom-panel">
+              <div className="saas-bottom-header">
+                <p className="saas-bottom-title">What You Get From This Session</p>
+                <span className="saas-bottom-badge">instant report</span>
+              </div>
+              <div className="saas-bottom-grid">
+                <div className="saas-bottom-item">
+                  <p className="saas-bottom-item-value">Strengths</p>
+                  <p className="saas-bottom-item-text">Top 3 communication and technical wins from your answers.</p>
+                </div>
+                <div className="saas-bottom-item">
+                  <p className="saas-bottom-item-value">Gaps</p>
+                  <p className="saas-bottom-item-text">Weak signals to improve before your real interview loop.</p>
+                </div>
+                <div className="saas-bottom-item">
+                  <p className="saas-bottom-item-value">Action Plan</p>
+                  <p className="saas-bottom-item-text">Focused next-step prompts tailored to your selected role.</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="saas-motivation-panel">
+              <div className="saas-bottom-header">
+                <p className="saas-bottom-title">Student Motivation</p>
+                <span className="saas-bottom-badge">hard work + failure</span>
+              </div>
+              <div className="saas-motivation-grid">
+                {motivationQuotes.map((item) => (
+                  <blockquote key={`${item.author}-${item.quote.slice(0, 18)}`} className="saas-quote-card">
+                    <p className="saas-quote-text">&ldquo;{item.quote}&rdquo;</p>
+                    <footer className="saas-quote-author">- {item.author}</footer>
+                  </blockquote>
+                ))}
+              </div>
             </div>
           </div>
         </div>
@@ -96,7 +175,7 @@ const InterviewPage = async () => {
               </div>
               <div>
                 <h2 className="saas-config-title">Interview Configuration</h2>
-                <p className="saas-config-subtitle">Customize your session in seconds</p>
+                <p className="saas-config-subtitle">Set your blueprint and launch</p>
               </div>
             </div>
             <InterviewForm />

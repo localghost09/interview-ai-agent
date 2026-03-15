@@ -27,8 +27,8 @@ export async function getCurrentUser() {
           const userData = userDoc.data();
           if (userData) {
             // Use Firestore data if available, fallback to Auth data
-            photoURL = userData.photoURL || photoURL;
-            displayName = userData.displayName || displayName;
+            photoURL = userData.avatar || userData.photoURL || photoURL;
+            displayName = userData.name || userData.displayName || displayName;
           }
         }
       } catch (firestoreError) {

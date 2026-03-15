@@ -33,11 +33,12 @@ export async function POST(request: NextRequest) {
     // Store profile data (including photoURL) in Firestore
     if (db) {
       const userRef = db.collection('users').doc(uid);
-      const profileData: { displayName?: string; photoURL?: string | null; updatedAt: Date } = {
+      const profileData: { name?: string; displayName?: string; photoURL?: string | null; avatar?: string | null; updatedAt: Date } = {
         updatedAt: new Date()
       };
 
       if (displayName !== undefined) {
+        profileData.name = displayName;
         profileData.displayName = displayName;
       }
 
@@ -46,6 +47,7 @@ export async function POST(request: NextRequest) {
         if (photoURL === null || photoURL === '') {
           // User is removing their profile photo
           profileData.photoURL = null;
+          profileData.avatar = null;
         } else {
           // Check photoURL size before storing
           const photoSizeInBytes = (photoURL.length * 3) / 4;
@@ -56,6 +58,7 @@ export async function POST(request: NextRequest) {
             );
           }
           profileData.photoURL = photoURL;
+          profileData.avatar = photoURL;
         }
       }
 

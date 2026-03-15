@@ -176,7 +176,23 @@ const InterviewForm = () => {
   });
 
   useEffect(() => {
-    setCurrentUser("user1");
+    const loadCurrentUser = async () => {
+      try {
+        const response = await fetch('/api/auth/current-user');
+        if (!response.ok) {
+          setCurrentUser(null);
+          return;
+        }
+
+        const user = await response.json();
+        setCurrentUser(user.uid || null);
+      } catch {
+        setCurrentUser(null);
+      }
+    };
+
+    loadCurrentUser();
+
     const role = searchParams.get('role');
     const type = searchParams.get('type');
     const level = searchParams.get('level');

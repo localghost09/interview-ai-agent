@@ -45,11 +45,20 @@ export class VoiceRecorder {
   private isRecording = false;
   private onTranscript: (text: string) => void;
   private onRecordingChange: (recording: boolean) => void;
+  private onError?: (message: string) => void;
   private accumulatedTranscript = '';
+  private supported = false;
+  private networkRetryCount = 0;
+  private readonly maxNetworkRetries = 2;
 
-  constructor(onTranscript: (text: string) => void, onRecordingChange: (recording: boolean) => void) {
+  constructor(
+    onTranscript: (text: string) => void,
+    onRecordingChange: (recording: boolean) => void,
+    onError?: (message: string) => void
+  ) {
     this.onTranscript = onTranscript;
     this.onRecordingChange = onRecordingChange;
+    this.onError = onError;
     this.setupSpeechRecognition();
   }
 
@@ -58,6 +67,7 @@ export class VoiceRecorder {
       const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
       
       if (SpeechRecognition) {
+        this.supported = true;
         this.recognition = new SpeechRecognition();
         this.recognition.continuous = true;
         this.recognition.interimResults = true;
@@ -66,6 +76,7 @@ export class VoiceRecorder {
         this.recognition.onstart = () => {
           console.log('Speech recognition started');
           this.isRecording = true;
+          this.networkRetryCount = 0;
           this.onRecordingChange(true);
         };
 
@@ -100,11 +111,53 @@ export class VoiceRecorder {
         };
 
         this.recognition.onerror = (event: SpeechRecognitionErrorEvent) => {
-          console.error('Speech recognition error:', event.error);
-          this.stop();
+          const code = event.error;
+
+          // "aborted" is usually expected when user stops recording manually.
+          if (code === 'aborted') {
+            this.isRecording = false;
+            this.onRecordingChange(false);
+            return;
+          }
+
+          this.isRecording = false;
+          this.onRecordingChange(false);
+
+          let message = 'Speech recognition failed. Please try again or type your answer.';
+
+          if (code === 'network') {
+            if (this.networkRetryCount < this.maxNetworkRetries) {
+              this.networkRetryCount += 1;
+
+              // Retry once/twice for transient browser speech-service failures.
+              setTimeout(() => {
+                if (!this.recognition || this.isRecording) return;
+                try {
+                  this.recognition.start();
+                } catch (retryError) {
+                  console.error('Speech recognition retry failed:', retryError);
+                }
+              }, 700);
+
+              return;
+            }
+
+            message = 'Speech recognition network issue. Check internet and browser microphone permissions, then retry.';
+          } else if (code === 'not-allowed' || code === 'service-not-allowed') {
+            message = 'Microphone access denied. Enable microphone permission in your browser and retry.';
+          } else if (code === 'no-speech') {
+            message = 'No speech detected. Speak clearly and try recording again.';
+          } else if (code === 'audio-capture') {
+            message = 'No microphone detected. Connect/select a microphone and retry.';
+          }
+
+          console.error('Speech recognition error:', code);
+          this.onError?.(message);
         };
       } else {
         console.warn('Speech recognition not supported');
+        this.supported = false;
+        this.onError?.('Speech recognition is not supported in this browser. Please type your answer.');
       }
     }
   }
@@ -136,6 +189,10 @@ export class VoiceRecorder {
 
   isActive() {
     return this.isRecording;
+  }
+
+  isSupported() {
+    return this.supported;
   }
 }
 

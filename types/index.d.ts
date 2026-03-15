@@ -24,6 +24,16 @@ interface Feedback {
     problemSolving: number;
     overallKnowledge: number;
   };
+  rubricSummary?: {
+    technical_accuracy: number;
+    clarity_structure: number;
+    problem_solving: number;
+    depth_of_knowledge: number;
+    keyword_match_score: number;
+    penalties_applied: number;
+    difficulty_adjustment: number;
+    total_score: number;
+  };
 }
 
 interface Interview {
@@ -63,6 +73,16 @@ interface CreateFeedbackParams {
     hiringRecommendation: string;
     nextSteps: string[];
     interviewerNotes: string;
+    rubricSummary?: {
+      technical_accuracy: number;
+      clarity_structure: number;
+      problem_solving: number;
+      depth_of_knowledge: number;
+      keyword_match_score: number;
+      penalties_applied: number;
+      difficulty_adjustment: number;
+      total_score: number;
+    };
   };
 }
 
@@ -70,6 +90,25 @@ interface User {
   name: string;
   email: string;
   id: string;
+  avatar?: string | null;
+  interviewsCompleted?: number;
+  totalScore?: number;
+  averageScore?: number;
+  leaderboardScore?: number;
+  streak?: number;
+}
+
+interface LeaderboardEntry {
+  id: string;
+  rank: number;
+  name: string;
+  email: string;
+  avatar?: string | null;
+  interviewsCompleted: number;
+  totalScore: number;
+  averageScore: number;
+  leaderboardScore: number;
+  streak: number;
 }
 
 interface InterviewCardProps {

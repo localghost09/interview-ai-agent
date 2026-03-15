@@ -10,6 +10,16 @@ export interface AnswerAnalysis {
   strengths: string[];
   weaknesses: string[];
   suggestions: string[];
+  rubric?: {
+    technical_accuracy: number;
+    clarity_structure: number;
+    problem_solving: number;
+    depth_of_knowledge: number;
+    keyword_match_score: number;
+    penalties_applied: number;
+    difficulty_adjustment: number;
+    total_score: number;
+  };
 }
 
 export interface InterviewAnalysis {
@@ -30,10 +40,50 @@ export interface InterviewAnalysis {
   hiringRecommendation: 'Strong Hire' | 'Hire' | 'No Hire' | 'Strong No Hire';
   nextSteps: string[];
   interviewerNotes: string;
+  rubricSummary?: {
+    technical_accuracy: number;
+    clarity_structure: number;
+    problem_solving: number;
+    depth_of_knowledge: number;
+    keyword_match_score: number;
+    penalties_applied: number;
+    difficulty_adjustment: number;
+    total_score: number;
+  };
 }
 
 class RealTimeAnalysisService {
   private model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+
+  private mapDifficulty(level: string): 'Easy' | 'Medium' | 'Hard' {
+    const normalized = (level || '').toLowerCase();
+
+    if (normalized.includes('senior') || normalized.includes('staff') || normalized.includes('principal')) {
+      return 'Hard';
+    }
+    if (normalized.includes('mid')) {
+      return 'Medium';
+    }
+
+    return 'Easy';
+  }
+
+  private buildExpectedKeywords(question: string, techStack: string[]): string[] {
+    const stopWords = new Set([
+      'the', 'a', 'an', 'and', 'or', 'to', 'of', 'for', 'with', 'in', 'on', 'at', 'is', 'are', 'was', 'were', 'be', 'how', 'what', 'why', 'when', 'where', 'which', 'who', 'that', 'this', 'your', 'you'
+    ]);
+
+    const questionKeywords = question
+      .toLowerCase()
+      .replace(/[^a-z0-9\s]/g, ' ')
+      .split(/\s+/)
+      .filter((word) => word.length > 3 && !stopWords.has(word));
+
+    const uniqueQuestionKeywords = Array.from(new Set(questionKeywords)).slice(0, 8);
+    const normalizedTech = techStack.map((tech) => tech.trim()).filter(Boolean);
+
+    return Array.from(new Set([...normalizedTech, ...uniqueQuestionKeywords])).slice(0, 12);
+  }
 
   // Add method to detect inadequate responses
   private isInadequateResponse(answer: string): boolean {
@@ -95,6 +145,9 @@ class RealTimeAnalysisService {
     techStack: string[],
     level: string
   ): Promise<AnswerAnalysis> {
+    const difficulty = this.mapDifficulty(level);
+    const expectedKeywords = this.buildExpectedKeywords(question, techStack);
+
     // Check for inadequate response first
     if (this.isInadequateResponse(candidateAnswer)) {
       return {
@@ -114,61 +167,104 @@ class RealTimeAnalysisService {
           "Learn to break down complex problems into smaller parts",
           "Research industry best practices and common approaches",
           "Even when unsure, attempt to discuss what you do know about related topics"
-        ]
+        ],
+        rubric: {
+          technical_accuracy: 0,
+          clarity_structure: 0,
+          problem_solving: 0,
+          depth_of_knowledge: 0,
+          keyword_match_score: 0,
+          penalties_applied: 15,
+          difficulty_adjustment: 0,
+          total_score: 0,
+        }
       };
     }
 
     try {
       const prompt = `
-You are a world-class technical interviewer with 20+ years of experience. Your task is to:
-1. Generate the PERFECT answer for the given question
-2. Compare the candidate's answer against the perfect answer
-3. Provide detailed analysis and scoring
+You are a senior technical interviewer evaluating a candidate during a mock technical interview.
 
-EVALUATION CONTEXT:
-Position: ${role}
-Level: ${level}
-Tech Stack: ${techStack.join(', ')}
-Question: "${question}"
-Candidate's Answer: "${candidateAnswer}"
+Your job is to objectively evaluate the candidate's response based on the specific interview question and provide a strict, structured evaluation similar to a real technical interview.
 
-STEP 1: Generate the IDEAL/PERFECT answer for this question considering:
-- Technical accuracy and depth appropriate for ${level} level
-- Best practices and industry standards
-- Practical examples and real-world applications
-- Common pitfalls and edge cases
-- Technology stack relevance: ${techStack.join(', ')}
+Interview Question:
+${question}
 
-STEP 2: Compare candidate's answer against the ideal answer:
-- Technical accuracy comparison
-- Completeness assessment  
-- Depth of understanding evaluation
-- Missing key concepts identification
-- Incorrect information detection
+Candidate Answer:
+${candidateAnswer}
 
-STEP 3: Scoring criteria (BE EXTREMELY STRICT):
-- 0-1: No answer/"I don't know"/completely wrong/no technical content
-- 2-3: Major misconceptions, serious inaccuracies, minimal relevant content
-- 4-5: Some correct elements but significant gaps or errors
-- 6-7: Mostly correct with minor gaps, demonstrates competency
-- 8-9: Comprehensive, accurate, shows strong understanding
-- 10: Perfect answer matching or exceeding the ideal response
+Difficulty Level:
+${difficulty}
 
-CRITICAL INSTRUCTIONS:
-- If candidate says "I don't know" or similar → Score 0-1
-- If answer contains major technical errors → Score 2-4 max
-- If answer misses critical concepts → Reduce score significantly
-- Only award 7+ for genuinely strong technical answers
-- Be extremely harsh - most answers should score 3-6
+Expected Key Concepts:
+${expectedKeywords.join(', ')}
 
-Provide analysis in JSON format:
+Evaluation Rubric (Total = 100)
+
+1. Technical Accuracy (0-40)
+- Correctness of concepts
+- Whether the candidate answers the actual question
+- Whether the explanation is technically valid
+
+2. Clarity and Structure (0-20)
+- Logical explanation
+- Clear communication
+- Organized reasoning
+
+3. Problem Solving Approach (0-20)
+- Whether the candidate explains how they approached the problem
+- Evidence of analytical thinking
+
+4. Depth of Knowledge (0-20)
+- Level of detail
+- Use of correct terminology
+- Demonstration of deeper understanding
+
+Keyword Coverage Check:
+Compare the candidate answer with the expected key concepts.
+If the answer includes important concepts, reward Technical Accuracy and Depth scores.
+
+Penalty Rules:
+Apply score penalties when necessary:
+- If the answer is extremely short or vague, subtract up to 15 points
+- If the answer is unrelated to the question, score must be below 30
+- If the answer contains incorrect technical claims, subtract up to 20 points
+- If the answer repeats generic statements without explanation, subtract up to 10 points
+
+Difficulty Adjustment:
+Adjust expectations based on difficulty level.
+- Easy Question: Expect basic conceptual understanding
+- Medium Question: Expect correct explanation with reasoning
+- Hard Question: Expect deeper explanation, examples, or system-level thinking
+
+Scoring Guidelines:
+- 0-40: Incorrect or irrelevant answer
+- 40-60: Partially correct but weak explanation
+- 60-75: Basic understanding but missing depth
+- 75-85: Good interview-level answer
+- 85-95: Strong explanation with reasoning
+- 95-100: Exceptional answer demonstrating expert-level understanding
+
+Important Instructions:
+- Never default to a middle score such as 70
+- Use the entire scoring range when appropriate
+- Be strict and realistic like a real interviewer
+- Avoid inflated scores unless the answer truly deserves it
+- Base the score strictly on the candidate answer, not assumptions
+
+Output Format (Strict JSON):
 {
-  "score": 0-10 (integer - BE EXTREMELY STRICT),
-  "feedback": "Detailed comparison between candidate's answer and ideal answer. Highlight what was correct, what was missing, what was wrong. Be specific about gaps and provide constructive criticism.",
-  "correctAnswer": "The comprehensive, perfect answer for this question with technical details, best practices, examples, and common considerations. This should be the gold standard response.",
-  "strengths": ["Specific correct elements from candidate's answer, empty array if none"],
-  "weaknesses": ["Specific gaps, errors, or missing concepts from candidate's answer"],
-  "suggestions": ["Actionable steps to improve - study specific topics, practice specific skills, learn specific concepts"]
+  "technical_accuracy": number,
+  "clarity_structure": number,
+  "problem_solving": number,
+  "depth_of_knowledge": number,
+  "keyword_match_score": number,
+  "penalties_applied": number,
+  "difficulty_adjustment": number,
+  "total_score": number,
+  "strengths": "2-3 sentences describing what the candidate did well",
+  "weaknesses": "2-3 sentences describing what is missing or incorrect",
+  "improvement_suggestion": "Specific suggestion on how the candidate could improve the answer"
 }
 `;
 
@@ -180,13 +276,39 @@ Provide analysis in JSON format:
       const cleanedText = text.replace(/```json\n?|\n?```/g, '').trim();
       const analysis = JSON.parse(cleanedText);
       
+      const totalScore100 = Math.max(0, Math.min(100, Number(analysis.total_score) || 0));
+      const normalizedScore10 = Math.max(0, Math.min(10, Math.round(totalScore100 / 10)));
+
+      const rubric = {
+        technical_accuracy: Math.max(0, Math.min(40, Number(analysis.technical_accuracy) || 0)),
+        clarity_structure: Math.max(0, Math.min(20, Number(analysis.clarity_structure) || 0)),
+        problem_solving: Math.max(0, Math.min(20, Number(analysis.problem_solving) || 0)),
+        depth_of_knowledge: Math.max(0, Math.min(20, Number(analysis.depth_of_knowledge) || 0)),
+        keyword_match_score: Math.max(0, Math.min(100, Number(analysis.keyword_match_score) || 0)),
+        penalties_applied: Math.max(0, Math.min(30, Number(analysis.penalties_applied) || 0)),
+        difficulty_adjustment: Math.max(-20, Math.min(20, Number(analysis.difficulty_adjustment) || 0)),
+        total_score: totalScore100,
+      };
+
+      const strengthsText = typeof analysis.strengths === 'string' ? analysis.strengths : '';
+      const weaknessesText = typeof analysis.weaknesses === 'string' ? analysis.weaknesses : '';
+      const improvementText = typeof analysis.improvement_suggestion === 'string' ? analysis.improvement_suggestion : '';
+
+      const feedback = [
+        `Rubric Score: ${totalScore100}/100`,
+        strengthsText,
+        weaknessesText,
+        `Improvement: ${improvementText}`,
+      ].filter(Boolean).join(' ');
+
       return {
-        score: Math.max(0, Math.min(10, analysis.score)),
-        feedback: analysis.feedback || "Good effort on this question.",
-        correctAnswer: analysis.correctAnswer || "The correct approach involves understanding the core concepts.",
-        strengths: analysis.strengths || [],
-        weaknesses: analysis.weaknesses || [],
-        suggestions: analysis.suggestions || []
+        score: normalizedScore10,
+        feedback: feedback || 'Structured evaluation completed.',
+        correctAnswer: `Expected key concepts: ${expectedKeywords.join(', ') || 'Core technical concepts relevant to the question.'}`,
+        strengths: strengthsText ? [strengthsText] : [],
+        weaknesses: weaknessesText ? [weaknessesText] : [],
+        suggestions: improvementText ? [improvementText] : [],
+        rubric,
       };
     } catch (error) {
       console.error('Error analyzing answer:', error);
@@ -199,32 +321,51 @@ Provide analysis in JSON format:
           correctAnswer: "A proper answer would demonstrate technical knowledge and understanding of the concepts involved.",
           strengths: [],
           weaknesses: ["Did not provide a substantive answer"],
-          suggestions: ["Study the topic thoroughly", "Practice explaining technical concepts"]
+          suggestions: ["Study the topic thoroughly", "Practice explaining technical concepts"],
+          rubric: {
+            technical_accuracy: 0,
+            clarity_structure: 0,
+            problem_solving: 0,
+            depth_of_knowledge: 0,
+            keyword_match_score: 0,
+            penalties_applied: 15,
+            difficulty_adjustment: 0,
+            total_score: 0,
+          }
         };
       }
 
-      // Regular fallback for other cases
+      // Regular fallback for other cases, using strict non-inflated scoring.
       const wordCount = candidateAnswer.trim().split(/\s+/).length;
-      const hasCodeOrTechnicalTerms = /\b(function|class|const|let|var|if|else|for|while|return|import|export|async|await|promise|callback|api|database|server|client|algorithm|data structure|time complexity|space complexity|big o|o\(n\)|optimization|react|angular|vue|node|javascript|typescript|python|java|sql|html|css)\b/i.test(candidateAnswer);
-      
-      let fallbackScore = 1; // Start very low
-      if (wordCount > 20) fallbackScore += 1;
-      if (wordCount > 50) fallbackScore += 1;
-      if (hasCodeOrTechnicalTerms) fallbackScore += 2;
-      if (candidateAnswer.length > 100) fallbackScore += 1;
-      
+      const answerLower = candidateAnswer.toLowerCase();
+      const keywordHits = expectedKeywords.filter((k) => answerLower.includes(k.toLowerCase())).length;
+      const keywordCoverage = expectedKeywords.length > 0 ? keywordHits / expectedKeywords.length : 0;
+
+      let fallbackScore100 = 20;
+      if (wordCount > 20) fallbackScore100 += 10;
+      if (wordCount > 50) fallbackScore100 += 10;
+      if (keywordCoverage >= 0.3) fallbackScore100 += 10;
+      if (keywordCoverage >= 0.6) fallbackScore100 += 10;
+
+      // Difficulty-aware cap to keep fallback conservative.
+      if (difficulty === 'Hard') fallbackScore100 = Math.min(fallbackScore100, 70);
+      if (difficulty === 'Medium') fallbackScore100 = Math.min(fallbackScore100, 75);
+      if (difficulty === 'Easy') fallbackScore100 = Math.min(fallbackScore100, 80);
+
+      const fallbackScore10 = Math.max(0, Math.min(10, Math.round(fallbackScore100 / 10)));
+
       return {
-        score: Math.min(5, fallbackScore), // Cap fallback at 5
-        feedback: `Your response shows ${wordCount > 30 ? 'some effort in providing detail' : 'limited detail'}. ${hasCodeOrTechnicalTerms ? 'Technical terminology was used appropriately.' : 'More technical terminology and concepts would strengthen your answer.'}`,
-        correctAnswer: "A comprehensive answer would include technical concepts, practical examples, best practices, and clear explanations of the underlying principles.",
+        score: fallbackScore10,
+        feedback: `Fallback rubric score: ${fallbackScore100}/100. Response length and keyword coverage were used because structured scoring model output was unavailable.`,
+        correctAnswer: `Expected key concepts: ${expectedKeywords.join(', ') || 'Core technical concepts relevant to the question.'}`,
         strengths: [
           ...(wordCount > 30 ? ["Provided detailed response"] : []),
-          ...(hasCodeOrTechnicalTerms ? ["Used technical terminology"] : []),
+          ...(keywordHits > 0 ? ["Included relevant key concepts"] : []),
           ...(candidateAnswer.length > 0 ? ["Attempted to answer"] : [])
         ],
         weaknesses: [
           ...(wordCount < 20 ? ["Response too brief"] : []),
-          ...(hasCodeOrTechnicalTerms ? [] : ["Lacks technical terminology"]),
+          ...(keywordHits > 0 ? [] : ["Misses expected key concepts"]),
           "Could provide more specific technical details"
         ],
         suggestions: [
@@ -232,17 +373,65 @@ Provide analysis in JSON format:
           "Practice explaining technical details clearly",
           "Include specific examples and use cases",
           "Learn industry terminology and best practices"
-        ]
+        ],
+        rubric: {
+          technical_accuracy: Math.min(40, Math.round(fallbackScore100 * 0.4)),
+          clarity_structure: Math.min(20, Math.round(fallbackScore100 * 0.2)),
+          problem_solving: Math.min(20, Math.round(fallbackScore100 * 0.2)),
+          depth_of_knowledge: Math.min(20, Math.round(fallbackScore100 * 0.2)),
+          keyword_match_score: Math.round(keywordCoverage * 100),
+          penalties_applied: Math.max(0, 100 - fallbackScore100 > 30 ? 20 : 10),
+          difficulty_adjustment: difficulty === 'Hard' ? -5 : difficulty === 'Easy' ? 3 : 0,
+          total_score: fallbackScore100,
+        }
       };
     }
   }
 
   async generateFinalAnalysis(
-    answers: Array<{ question: string; answer: string; score: number; feedback: string }>,
+    answers: Array<{
+      question: string;
+      answer: string;
+      score: number;
+      feedback: string;
+      rubric?: {
+        technical_accuracy: number;
+        clarity_structure: number;
+        problem_solving: number;
+        depth_of_knowledge: number;
+        keyword_match_score: number;
+        penalties_applied: number;
+        difficulty_adjustment: number;
+        total_score: number;
+      };
+    }>,
     role: string,
     techStack: string[],
     level: string
   ): Promise<InterviewAnalysis> {
+    const answersWithRubric = answers.filter((answer) => Boolean(answer.rubric));
+    const rubricSummary = answersWithRubric.length > 0
+      ? {
+          technical_accuracy: Math.round(answersWithRubric.reduce((sum, answer) => sum + (answer.rubric?.technical_accuracy || 0), 0) / answersWithRubric.length),
+          clarity_structure: Math.round(answersWithRubric.reduce((sum, answer) => sum + (answer.rubric?.clarity_structure || 0), 0) / answersWithRubric.length),
+          problem_solving: Math.round(answersWithRubric.reduce((sum, answer) => sum + (answer.rubric?.problem_solving || 0), 0) / answersWithRubric.length),
+          depth_of_knowledge: Math.round(answersWithRubric.reduce((sum, answer) => sum + (answer.rubric?.depth_of_knowledge || 0), 0) / answersWithRubric.length),
+          keyword_match_score: Math.round(answersWithRubric.reduce((sum, answer) => sum + (answer.rubric?.keyword_match_score || 0), 0) / answersWithRubric.length),
+          penalties_applied: Math.round(answersWithRubric.reduce((sum, answer) => sum + (answer.rubric?.penalties_applied || 0), 0) / answersWithRubric.length),
+          difficulty_adjustment: Math.round(answersWithRubric.reduce((sum, answer) => sum + (answer.rubric?.difficulty_adjustment || 0), 0) / answersWithRubric.length),
+          total_score: Math.round(answersWithRubric.reduce((sum, answer) => sum + (answer.rubric?.total_score || 0), 0) / answersWithRubric.length),
+        }
+      : {
+          technical_accuracy: 0,
+          clarity_structure: 0,
+          problem_solving: 0,
+          depth_of_knowledge: 0,
+          keyword_match_score: 0,
+          penalties_applied: 0,
+          difficulty_adjustment: 0,
+          total_score: 0,
+        };
+
     // Count inadequate responses
     const inadequateCount = answers.filter(answer => 
       this.isInadequateResponse(answer.answer) || answer.score <= 1
@@ -281,7 +470,8 @@ Provide analysis in JSON format:
           "Build practical projects to demonstrate learning",
           "Consider entry-level positions or internships for experience"
         ],
-        interviewerNotes: `Candidate provided ${inadequateCount} inadequate responses out of ${answers.length} questions (${inadequatePercentage.toFixed(1)}% inadequate rate). This level of non-response indicates insufficient technical knowledge and preparation. Not recommended for any technical role at this time.`
+        interviewerNotes: `Candidate provided ${inadequateCount} inadequate responses out of ${answers.length} questions (${inadequatePercentage.toFixed(1)}% inadequate rate). This level of non-response indicates insufficient technical knowledge and preparation. Not recommended for any technical role at this time.`,
+        rubricSummary,
       };
     }
 
@@ -381,7 +571,8 @@ BE EXTREMELY STRICT. High inadequate response rates should result in poor scores
                             inadequatePercentage > 30 ? 'No Hire' :
                             analysis.hiringRecommendation || 'No Hire',
         nextSteps: analysis.nextSteps || ["Intensive study of fundamental concepts", "Technical interview practice"],
-        interviewerNotes: analysis.interviewerNotes || `${inadequateCount} inadequate responses indicate insufficient preparation for this role.`
+        interviewerNotes: analysis.interviewerNotes || `${inadequateCount} inadequate responses indicate insufficient preparation for this role.`,
+        rubricSummary,
       };
     } catch (error) {
       console.error('Error generating final analysis:', error);
@@ -441,7 +632,8 @@ BE EXTREMELY STRICT. High inadequate response rates should result in poor scores
           "Build practical projects to demonstrate skills",
           "Retake assessment after significant preparation"
         ],
-        interviewerNotes: `Candidate provided ${inadequateCount} inadequate responses out of ${answers.length} questions (${inadequatePercentage.toFixed(1)}% inadequate rate). This indicates insufficient technical knowledge for the ${role} position. Recommend substantial additional preparation before reconsideration.`
+        interviewerNotes: `Candidate provided ${inadequateCount} inadequate responses out of ${answers.length} questions (${inadequatePercentage.toFixed(1)}% inadequate rate). This indicates insufficient technical knowledge for the ${role} position. Recommend substantial additional preparation before reconsideration.`,
+        rubricSummary,
       };
     }
   }

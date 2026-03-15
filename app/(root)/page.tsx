@@ -4,7 +4,9 @@ import Link from 'next/link'
 import Image from 'next/image'
 import InterviewCard from '@/components/InterviewCard'
 import FaangCard from '@/components/FaangCard'
+import LeaderboardTopWidget from '@/components/LeaderboardTopWidget'
 import { getUserInterviews } from '@/lib/actions/interview.action'
+import { getTopLeaderboardUsers } from '@/lib/actions/leaderboard.action'
 import { getCurrentUser } from '@/lib/auth'
 
 // Force dynamic rendering
@@ -111,6 +113,13 @@ const page = async () => {
   const user = await getCurrentUser();
 
   let userInterviews: Interview[] = [];
+  let topLeaderboardUsers: LeaderboardEntry[] = [];
+
+  const leaderboardResult = await getTopLeaderboardUsers(3);
+  if (leaderboardResult.success) {
+    topLeaderboardUsers = leaderboardResult.users;
+  }
+
   if (user) {
     const userInterviewsResult = await getUserInterviews(user.uid);
     userInterviews = userInterviewsResult.success ? userInterviewsResult.interviews : [];
@@ -179,6 +188,11 @@ const page = async () => {
             )}
           </React.Fragment>
         ))}
+      </section>
+
+      {/* ── LEADERBOARD PREVIEW ─────────────────────────── */}
+      <section className="mt-4">
+        <LeaderboardTopWidget users={topLeaderboardUsers} />
       </section>
 
       {/* ── HOW IT WORKS ──────────────────────────────────── */}

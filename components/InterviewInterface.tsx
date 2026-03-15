@@ -20,10 +20,10 @@ const InterviewInterface = ({ interview, userId }: Props) => {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [currentResponse, setCurrentResponse] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [interviewStarted, setInterviewStarted] = useState(false);
   const [responses, setResponses] = useState<{ question: string; answer: string }[]>([]);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
+  const [speechSupported, setSpeechSupported] = useState(true);
   const [voiceRecorder, setVoiceRecorder] = useState<VoiceRecorder | null>(null);
 
   const currentQuestion = interview.questions[currentQuestionIndex];
@@ -35,9 +35,11 @@ const InterviewInterface = ({ interview, userId }: Props) => {
   useEffect(() => {
     const recorder = new VoiceRecorder(
       (transcript: string) => { setCurrentResponse(transcript); },
-      (recording: boolean) => { setIsRecording(recording); }
+      (recording: boolean) => { setIsRecording(recording); },
+      (message: string) => { toast.error(message); }
     );
     setVoiceRecorder(recorder);
+    setSpeechSupported(recorder.isSupported());
     return () => {
       if (speechSynthesizer) speechSynthesizer.stop();
       if (recorder) recorder.stop();
@@ -45,17 +47,23 @@ const InterviewInterface = ({ interview, userId }: Props) => {
   }, []);
 
   useEffect(() => {
-    if (interviewStarted && currentQuestion) {
+    if (currentQuestion) {
       setIsSpeaking(true);
       speechSynthesizer.speak(currentQuestion, {
         onStart: () => setIsSpeaking(true),
         onEnd: () => setIsSpeaking(false)
       });
     }
-  }, [currentQuestionIndex, interviewStarted, currentQuestion]);
+  }, [currentQuestionIndex, currentQuestion]);
 
-  const handleStartInterview = () => { setInterviewStarted(true); };
-  const toggleRecording = () => { if (voiceRecorder) voiceRecorder.toggle(); };
+  const toggleRecording = () => {
+    if (!voiceRecorder || !speechSupported) {
+      toast.error('Voice recording is not available. Please type your answer.');
+      return;
+    }
+
+    voiceRecorder.toggle();
+  };
 
   const handleNextQuestion = async () => {
     if (!currentResponse.trim()) {
@@ -63,21 +71,42 @@ const InterviewInterface = ({ interview, userId }: Props) => {
       return;
     }
     speechSynthesizer.stop();
-    setResponses(prev => [...prev, { question: currentQuestion, answer: currentResponse.trim() }]);
+    const updatedResponses = [...responses, { question: currentQuestion, answer: currentResponse.trim() }];
+    setResponses(updatedResponses);
     setCurrentResponse("");
-    if (isLastQuestion) handleCompleteInterview();
+    if (isLastQuestion) handleCompleteInterview(updatedResponses);
     else setCurrentQuestionIndex(prev => prev + 1);
   };
 
-  const handleCompleteInterview = async () => {
+  const handleCompleteInterview = async (allResponses: { question: string; answer: string }[] = responses) => {
     setIsLoading(true);
     try {
+      const scoredResponses = await Promise.all(
+        allResponses.map(async (response) => {
+          const analysis = await realTimeAnalysisService.analyzeAnswer(
+            response.question,
+            response.answer,
+            interview.role,
+            interview.techstack || [],
+            interview.level
+          );
+
+          return {
+            question: response.question,
+            answer: response.answer,
+            score: analysis.score,
+            feedback: analysis.feedback,
+            rubric: analysis.rubric,
+          };
+        })
+      );
+
       const finalAnalysis = await realTimeAnalysisService.generateFinalAnalysis(
-        responses.map(r => ({ question: r.question, answer: r.answer, score: 7, feedback: "Answer provided" })),
+        scoredResponses,
         interview.role, interview.techstack || [], interview.level
       );
       const transcript: { role: string; content: string }[] = [];
-      responses.forEach((r) => {
+      allResponses.forEach((r) => {
         transcript.push({ role: 'assistant', content: r.question });
         transcript.push({ role: 'user', content: r.answer });
       });
@@ -96,64 +125,6 @@ const InterviewInterface = ({ interview, userId }: Props) => {
       setTimeout(() => { router.push(`/interview/${interview.id}/feedback`); }, 2000);
     } finally { setIsLoading(false); }
   };
-
-  /* ── Pre-interview Screen ──────────────────────── */
-  if (!interviewStarted) {
-    return (
-      <div className="interview-ready-shell min-h-[80vh] flex items-center justify-center px-4 py-8">
-        <div className="interview-glass interview-glass-glow p-8 md:p-10 max-w-2xl w-full">
-          {/* Status pill */}
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full mb-5" style={{ background: 'rgba(202, 197, 254, 0.08)', border: '1px solid rgba(202, 197, 254, 0.12)' }}>
-            <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-            <span className="text-[11px] font-medium text-primary-200/80 tracking-wide">AI Interviewer Ready</span>
-          </div>
-
-          <div className="grid md:grid-cols-[auto_1fr] gap-6 items-center">
-            <div className="flex md:flex-col items-center gap-4 justify-center">
-              <Image src="/ai-avatar.png" alt="AI Interviewer" width={110} height={110} className="rounded-full border-2 border-primary-200/20 shadow-lg shadow-primary-200/10" />
-              <div className="text-left md:text-center">
-                <h1 className="text-3xl md:text-4xl font-extrabold text-white mb-1">
-                  Ready to <span className="interview-shimmer-text">Begin?</span>
-                </h1>
-                <p className="text-sm text-light-400 max-w-md leading-relaxed">
-                  Your AI interviewer is prepared for the <span className="text-white font-medium">{interview.role}</span> session.
-                </p>
-              </div>
-            </div>
-
-            <div className="space-y-4">
-              <div className="grid grid-cols-3 gap-3">
-                <div className="interview-stat-card">
-                  <p className="text-xl font-extrabold text-white">{interview.questions.length}</p>
-                  <p className="text-[10px] text-light-400 mt-0.5">Questions</p>
-                </div>
-                <div className="interview-stat-card">
-                  <p className="text-xl font-extrabold text-white">{interview.type}</p>
-                  <p className="text-[10px] text-light-400 mt-0.5">Type</p>
-                </div>
-                <div className="interview-stat-card">
-                  <p className="text-xl font-extrabold text-white">{interview.level}</p>
-                  <p className="text-[10px] text-light-400 mt-0.5">Level</p>
-                </div>
-              </div>
-
-              <div className="interview-ready-checklist">
-                <div className="interview-ready-item">Answer with specific examples and measurable impact.</div>
-                <div className="interview-ready-item">Use STAR format for behavioral and mixed questions.</div>
-                <div className="interview-ready-item">Keep responses concise and focused on decisions.</div>
-              </div>
-            </div>
-          </div>
-
-          <div className="mt-6">
-            <button onClick={handleStartInterview} className="interview-submit-btn text-base">
-              Start Interview
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   /* ── Active Interview Screen ───────────────────── */
   const progressPct = ((currentQuestionIndex + 1) / interview.questions.length) * 100;
@@ -230,10 +201,12 @@ const InterviewInterface = ({ interview, userId }: Props) => {
                 <div className="flex justify-center">
                   <button
                     onClick={toggleRecording}
-                    disabled={isSpeaking}
+                    disabled={isSpeaking || !speechSupported}
                     className={`interview-voice-btn ${isRecording ? "interview-voice-btn-recording" : ""}`}
                   >
-                    {isRecording ? (
+                    {!speechSupported ? (
+                      <>Voice Unavailable</>
+                    ) : isRecording ? (
                       <><div className="w-2.5 h-2.5 bg-white rounded-full animate-pulse"></div>Stop Recording</>
                     ) : (
                       <><svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M7 4a3 3 0 016 0v4a3 3 0 11-6 0V4zm4 10.93A7.001 7.001 0 0017 8a1 1 0 10-2 0A5 5 0 015 8a1 1 0 00-2 0 7.001 7.001 0 006 6.93V17H6a1 1 0 100 2h8a1 1 0 100-2h-3v-2.07z" clipRule="evenodd" /></svg>Start Voice Recording</>

@@ -2,6 +2,8 @@
 
 import { db } from "@/firebase/admin";
 import { generateFeedbackWithGemini } from "@/lib/gemini";
+import { updateUserLeaderboardAfterInterview } from "@/lib/actions/leaderboard.action";
+import { syncUserLeaderboardStats } from "@/lib/actions/leaderboard.action";
 
 export async function createFeedback(params: CreateFeedbackParams) {
   const { interviewId, userId, transcript, feedbackId, finalAnalysis } = params;
@@ -56,7 +58,8 @@ export async function createFeedback(params: CreateFeedbackParams) {
         improvementAreas: finalAnalysis.improvementAreas,
         nextSteps: finalAnalysis.nextSteps,
         interviewerNotes: finalAnalysis.interviewerNotes,
-        detailedAnalysis: finalAnalysis.detailedAnalysis
+        detailedAnalysis: finalAnalysis.detailedAnalysis,
+        rubricSummary: finalAnalysis.rubricSummary,
       };
     } else {
       // Fallback to legacy Gemini feedback generation
@@ -109,6 +112,19 @@ export async function createFeedback(params: CreateFeedbackParams) {
       docRef = { id: feedbackId };
     } else {
       docRef = await db.collection('feedback').add(feedbackData);
+    }
+
+    if (interview.finalized) {
+      try {
+        await updateUserLeaderboardAfterInterview({
+          userId,
+          interviewId,
+          score: Number(feedbackData.totalScore) || 0,
+        });
+      } catch (leaderboardError) {
+        console.error('Direct leaderboard update failed, falling back to sync:', leaderboardError);
+        await syncUserLeaderboardStats(userId);
+      }
     }
 
     return {
@@ -201,7 +217,6 @@ export async function getFeedbackByInterview(interviewId: string) {
   try {
     const snapshot = await db.collection('feedback')
       .where('interviewId', '==', interviewId)
-      .limit(1)
       .get();
 
     if (snapshot.empty) {
@@ -211,7 +226,13 @@ export async function getFeedbackByInterview(interviewId: string) {
       };
     }
 
-    const doc = snapshot.docs[0];
+    // Sort in-memory to get the most recent feedback without requiring a composite index
+    const sorted = snapshot.docs.sort((a, b) => {
+      const aDate = a.data().createdAt ?? '';
+      const bDate = b.data().createdAt ?? '';
+      return bDate > aDate ? 1 : bDate < aDate ? -1 : 0;
+    });
+    const doc = sorted[0];
     return {
       success: true,
       feedback: { id: doc.id, ...doc.data() } as Feedback

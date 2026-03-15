@@ -19,7 +19,14 @@ export  async function signUp(params:SignUpParams) {
         }
         
         await db.collection('users').doc(uid).set({
-            name , email
+            name,
+            email,
+            avatar: null,
+            interviewsCompleted: 0,
+            totalScore: 0,
+            averageScore: 0,
+            leaderboardScore: 0,
+            streak: 0,
         })
 
         return { 
@@ -66,6 +73,21 @@ export async function signIn(params:SignInParams) {
                 message : 'User does not exist . Create an account instead'
             }
         }
+
+        // Keep Firestore users profile in sync for leaderboard/profile usage.
+        await db.collection('users').doc(userRecord.uid).set({
+            name: userRecord.displayName || email.split('@')[0] || 'User',
+            displayName: userRecord.displayName || email.split('@')[0] || 'User',
+            email,
+            avatar: userRecord.photoURL || null,
+            photoURL: userRecord.photoURL || null,
+            interviewsCompleted: 0,
+            totalScore: 0,
+            averageScore: 0,
+            leaderboardScore: 0,
+            streak: 0,
+            updatedAt: new Date().toISOString(),
+        }, { merge: true });
 
         await  setSessionCookie(idToken);
 
@@ -141,7 +163,8 @@ export async function updateUserDisplayName(uid: string, displayName: string) {
 
         // Also update in Firestore for consistency
         await db.collection('users').doc(uid).update({
-            name: displayName
+            name: displayName,
+            displayName,
         });
 
         return {

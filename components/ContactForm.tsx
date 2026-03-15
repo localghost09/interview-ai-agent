@@ -5,10 +5,22 @@ import { Send } from 'lucide-react';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
 
+const SUBJECT_OPTIONS = [
+  { value: 'technical-support', label: 'Technical Support' },
+  { value: 'account-help', label: 'Account Help' },
+  { value: 'feedback', label: 'Feedback & Suggestions' },
+  { value: 'bug-report', label: 'Bug Report' },
+  { value: 'feature-request', label: 'Feature Request' },
+  { value: 'billing', label: 'Billing & Payments' },
+  { value: 'partnership', label: 'Partnership Inquiry' },
+  { value: 'other', label: 'Other' },
+];
+
 interface ContactFormData {
   firstName: string;
   lastName: string;
   email: string;
+  mobileNumber: string;
   subject: string;
   message: string;
   newsletter: boolean;
@@ -28,6 +40,7 @@ export default function ContactForm() {
     firstName: '',
     lastName: '',
     email: '',
+    mobileNumber: '',
     subject: '',
     message: '',
     newsletter: false,
@@ -82,6 +95,11 @@ export default function ContactForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!formData.subject) {
+      toast.error('Please select a subject');
+      return;
+    }
     
     if (!currentUser) {
       toast.error('Please sign in to send us a message');
@@ -116,6 +134,7 @@ export default function ContactForm() {
           firstName: currentUser.name?.split(' ')[0] || '',
           lastName: currentUser.name?.split(' ')[1] || '',
           email: currentUser.email,
+          mobileNumber: '',
           subject: '',
           message: '',
           newsletter: false,
@@ -229,27 +248,45 @@ export default function ContactForm() {
       </div>
 
       <div>
+        <label htmlFor="mobileNumber" className="block text-gray-300 font-medium mb-2">
+          Mobile Number
+        </label>
+        <input
+          type="tel"
+          id="mobileNumber"
+          name="mobileNumber"
+          value={formData.mobileNumber}
+          onChange={handleChange}
+          className="w-full px-4 py-3 rounded-lg bg-gray-700 border border-gray-600 text-white placeholder-gray-400 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+          placeholder="Enter your mobile number"
+        />
+      </div>
+
+      <div>
         <label htmlFor="subject" className="block text-gray-300 font-medium mb-2">
           Subject *
         </label>
-        <select
-          id="subject"
-          name="subject"
-          value={formData.subject}
-          onChange={handleChange}
-          required
-          className="w-full px-4 py-3 rounded-lg bg-gray-700 border border-gray-600 text-white focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-        >
-          <option value="">Select a subject</option>
-          <option value="technical-support">Technical Support</option>
-          <option value="account-help">Account Help</option>
-          <option value="feedback">Feedback & Suggestions</option>
-          <option value="bug-report">Bug Report</option>
-          <option value="feature-request">Feature Request</option>
-          <option value="billing">Billing & Payments</option>
-          <option value="partnership">Partnership Inquiry</option>
-          <option value="other">Other</option>
-        </select>
+        <div className="relative">
+          <select
+            id="subject"
+            name="subject"
+            value={formData.subject}
+            onChange={handleChange}
+            required
+            className="w-full appearance-none rounded-lg border border-gray-600 bg-gray-700 px-4 py-3 pr-11 text-white focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+          >
+            <option value="">Select a subject</option>
+            {SUBJECT_OPTIONS.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
+          <svg className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+          </svg>
+        </div>
+        <p className="mt-1 text-xs text-gray-400">Choose the topic that best matches your request for faster support.</p>
       </div>
 
       <div>

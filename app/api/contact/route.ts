@@ -18,7 +18,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { firstName, lastName, email, subject, message, newsletter } = body;
+    const { firstName, lastName, email, mobileNumber, subject, message, newsletter } = body;
 
     // Validate that the email matches the authenticated user's email
     if (email !== currentUser.email) {
@@ -65,6 +65,7 @@ export async function POST(request: NextRequest) {
     console.log('📝 Contact form submission:', {
       name: `${firstName} ${lastName}`,
       email,
+      mobileNumber,
       subject,
       messageLength: message.length,
       newsletter,
@@ -97,6 +98,7 @@ export async function POST(request: NextRequest) {
               <h3 style="color: #4F46E5; margin-top: 0;">Contact Information</h3>
               <p><strong>Name:</strong> ${firstName} ${lastName}</p>
               <p><strong>Email:</strong> <a href="mailto:${email}">${email}</a></p>
+              <p><strong>Mobile:</strong> ${mobileNumber || 'Not provided'}</p>
               <p><strong>Subject:</strong> ${subject}</p>
               <p><strong>Newsletter:</strong> ${newsletter ? 'Yes' : 'No'}</p>
               <p><strong>User ID:</strong> ${currentUser.uid}</p>
@@ -126,6 +128,7 @@ This message was sent by an authenticated user with verified email address.
 CONTACT INFORMATION
 Name: ${firstName} ${lastName}
 Email: ${email}
+Mobile: ${mobileNumber || 'Not provided'}
 Subject: ${subject}
 Newsletter: ${newsletter ? 'Yes' : 'No'}
 User ID: ${currentUser.uid}
@@ -163,6 +166,7 @@ Reply directly to this email to respond to ${firstName}.
           name: `${firstName} ${lastName}`,
           email: email,
           subject: subject,
+          mobileNumber: mobileNumber,
           message: message,
           newsletter: newsletter,
           userId: currentUser.uid,

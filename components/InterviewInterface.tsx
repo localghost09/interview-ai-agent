@@ -235,8 +235,8 @@ const InterviewInterface = ({ interview, userId }: Props) => {
   );
 
   return (
-    <div className="interview-live-shell h-screen overflow-hidden bg-[radial-gradient(circle_at_12%_0%,rgba(59,130,246,0.16),transparent_28%),radial-gradient(circle_at_88%_12%,rgba(139,92,246,0.16),transparent_28%),linear-gradient(180deg,#070b16_0%,#0b1020_100%)] p-3 md:p-4">
-      <div className="mx-auto flex h-full max-w-7xl flex-col gap-3">
+    <div className="interview-live-shell h-[680px] overflow-hidden bg-[radial-gradient(circle_at_12%_0%,rgba(59,130,246,0.16),transparent_28%),radial-gradient(circle_at_88%_12%,rgba(139,92,246,0.16),transparent_28%),linear-gradient(180deg,#070b16_0%,#0b1020_100%)] p-3 md:p-4 mt-1">
+      <div className="mx-auto flex h-full max-w-7xl flex-col gap-5 ">
         <section className="shrink-0 rounded-[28px] border border-white/12 bg-white/[0.04] px-4 py-3 backdrop-blur-xl shadow-[0_20px_60px_-36px_rgba(0,0,0,0.75)]">
           <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
             <div className="min-w-0">
@@ -272,12 +272,12 @@ const InterviewInterface = ({ interview, userId }: Props) => {
 
         <div className="grid min-h-0 flex-1 gap-3 xl:grid-cols-[minmax(0,1fr)_270px] xl:items-stretch">
           <section className="grid h-full min-h-0 gap-3">
-            <article className="interview-glass rounded-[28px] p-4 md:p-5">
+            <article className="interview-glass min-h-[220px] rounded-[28px] p-4 md:p-5">
               <div className="flex items-start justify-between gap-3">
                 <div className="flex items-center gap-3">
-                  <Image src="/ai-avatar.png" alt="AI Interviewer" width={38} height={38} className="rounded-full border border-primary-200/30" />
+                  <Image src="/ai-avatar.png" alt="Interview Assistant" width={38} height={38} className="rounded-full border border-primary-200/30" />
                   <div>
-                    <p className="text-[10px] uppercase tracking-[0.16em] text-primary-200">Current Prompt</p>
+                    <p className="text-[10px] uppercase tracking-[0.16em] text-primary-200">Live Question</p>
                     <p className="text-[11px] text-light-400">Question {currentQuestionIndex + 1} of {interview.questions.length}</p>
                   </div>
                 </div>
@@ -288,25 +288,25 @@ const InterviewInterface = ({ interview, userId }: Props) => {
                 </span>
               </div>
 
-              <p className="mt-3 rounded-2xl border border-white/10 bg-black/20 p-4 text-[15px] leading-relaxed text-light-100 md:text-[16px]">
+              <p className="mt-3 min-h-[118px] rounded-2xl border border-white/10 bg-black/20 p-4 text-[15px] leading-relaxed text-light-100 md:text-[16px]">
                 {currentQuestion}
               </p>
             </article>
 
-            <article className="interview-glass rounded-[28px] p-2.5 md:p-3">
-              <div className="mb-1 flex items-center justify-between gap-1.5">
+            <article className="interview-glass h-[260px] rounded-[28px] p-2.5 md:p-3 flex flex-col overflow-hidden">
+              <div className="mb-2 flex items-center justify-between gap-2 shrink-0">
                 <div className="flex items-center gap-2">
-                  <Image src="/user-avatar.png" alt="You" width={30} height={30} className="rounded-full border border-white/10" />
+                  <Image src="/user-avatar.png" alt="You" width={34} height={34} className="rounded-full border border-white/10" />
                   <div>
-                    <p className="text-[9px] uppercase tracking-[0.16em] text-light-300">Your Response</p>
-                    <p className="text-[10px] text-light-400">Concise, specific, measurable.</p>
+                    <p className="text-[10px] uppercase tracking-[0.16em] text-light-300">Your Response</p>
+                    <p className="text-[11px] text-light-400">Concise, specific, measurable.</p>
                   </div>
                 </div>
 
-                <div className="flex flex-wrap items-center gap-1 text-[9px] text-light-400">
-                  <span className="rounded-full border border-white/10 bg-black/20 px-1.5 py-0.5">Words {responseWordCount}</span>
-                  <span className="rounded-full border border-white/10 bg-black/20 px-1.5 py-0.5">Avg {avgWordsPerAnswer}</span>
-                  <span className="rounded-full border border-white/10 bg-black/20 px-1.5 py-0.5">Left {remainingCount}</span>
+                <div className="flex flex-wrap items-center gap-1.5 text-[10px] text-light-300">
+                  <span className="rounded-full border border-white/10 bg-black/20 px-2 py-1">Words {responseWordCount}</span>
+                  <span className="rounded-full border border-white/10 bg-black/20 px-2 py-1">Avg {avgWordsPerAnswer}</span>
+                  <span className="rounded-full border border-white/10 bg-black/20 px-2 py-1">Left {remainingCount}</span>
                 </div>
               </div>
 
@@ -316,11 +316,11 @@ const InterviewInterface = ({ interview, userId }: Props) => {
                   setCurrentResponse(e.target.value);
                 }}
                 placeholder={isRecording ? 'Listening... speak your answer now' : 'Type or record your response'}
-                className={`interview-textarea min-h-[3.25rem] md:min-h-[3.75rem] ${isRecording ? 'interview-textarea-recording' : ''}`}
+                className={`interview-textarea h-[3.25rem] md:h-[3.75rem] ${isRecording ? 'interview-textarea-recording' : ''}`}
                 disabled={isRecording}
               />
 
-              <div className="mt-1 flex flex-col gap-1 md:flex-row md:items-center md:justify-between">
+              <div className="mt-2 flex flex-col gap-1.5 md:flex-row md:items-center md:justify-between shrink-0">
                 <div className="flex flex-wrap items-center gap-1.5">
                   <button
                     onClick={toggleRecording}
@@ -395,7 +395,7 @@ const InterviewInterface = ({ interview, userId }: Props) => {
               <p className="mt-1.5 text-[13px] leading-relaxed text-light-100">Use one sharp example, one decision, and one measurable result.</p>
             </article>
 
-            <article className="interview-glass flex h-full flex-col rounded-[28px] p-3">
+            <article className="interview-glass flex h-[400px]  flex-col rounded-[28px] p-3">
               <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-light-300">Answer Coach</p>
               <div className="mt-2 rounded-2xl border border-white/10 bg-white/[0.04] p-2.5">
                 <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-primary-200">What to include</p>

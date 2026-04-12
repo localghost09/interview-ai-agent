@@ -18,11 +18,8 @@ const ROLE_SUGGESTIONS = [
   'Data Scientist',
   'DevOps Engineer',
   'Product Manager',
-  'UI/UX Designer',
-  'Mobile Developer',
   'Python Developer',
   'Java Developer',
-  'QA Engineer',
   'Cloud Engineer',
 ];
 
@@ -100,7 +97,7 @@ const InputPanel: React.FC<InputPanelProps> = ({ onAnalyze, isAnalyzing, analysi
 
           {activeTab === 'upload' ? (
             <div
-              className="border-2 border-dashed border-white/20 rounded-xl p-5 flex flex-col items-center justify-center text-center cursor-pointer hover:bg-white/5 transition-colors h-72"
+              className="border-2 border-dashed border-white/20 rounded-xl p-5 flex flex-col items-center justify-center text-center cursor-pointer hover:bg-white/5 transition-colors h-56"
               onClick={() => fileInputRef.current?.click()}
             >
               <input
@@ -136,7 +133,7 @@ const InputPanel: React.FC<InputPanelProps> = ({ onAnalyze, isAnalyzing, analysi
             </div>
           ) : (
             <textarea
-              className="w-full h-72 p-3 rounded-xl border border-white/20 bg-white/[0.03] text-light-100 focus:ring-2 focus:ring-cyan-300/30 focus:border-cyan-300/40 resize-none text-sm"
+              className="w-full h-56 p-3 rounded-xl border border-white/20 bg-white/[0.03] text-light-100 focus:ring-2 focus:ring-cyan-300/30 focus:border-cyan-300/40 resize-none text-sm"
               placeholder="Paste your resume content here..."
               value={resumeText}
               onChange={(e) => setResumeText(e.target.value)}
@@ -146,7 +143,7 @@ const InputPanel: React.FC<InputPanelProps> = ({ onAnalyze, isAnalyzing, analysi
 
         <div className="flex flex-col h-full">
           <label className="block text-sm font-semibold mb-2 text-light-200">Job Description</label>
-          <div className="flex flex-col border border-white/20 rounded-xl overflow-hidden bg-white/[0.03] focus-within:ring-2 focus-within:ring-cyan-300/30 focus-within:border-cyan-300/40 h-full">
+          <div className="flex flex-col border border-white/20 rounded-xl overflow-hidden bg-white/[0.03] focus-within:ring-2 focus-within:ring-cyan-300/30 focus-within:border-cyan-300/40 h-56">
             <textarea
               className="w-full flex-[0.4] p-3 bg-transparent resize-none text-sm outline-none border-none text-light-100"
               placeholder="Paste the job description here..."

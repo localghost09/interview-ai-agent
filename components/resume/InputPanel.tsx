@@ -4,6 +4,7 @@ import React, { useState, useRef } from 'react';
 import { Upload, FileText, X, AlertCircle } from 'lucide-react';
 import { parseFile } from '@/lib/resume/fileParser';
 import { clsx } from 'clsx';
+import { useRouter } from 'next/navigation';
 
 interface InputPanelProps {
   onAnalyze: (resume: string, jd: string) => void;
@@ -24,6 +25,7 @@ const ROLE_SUGGESTIONS = [
 ];
 
 const InputPanel: React.FC<InputPanelProps> = ({ onAnalyze, isAnalyzing, analysisError }) => {
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState<'paste' | 'upload'>('upload');
   const [resumeText, setResumeText] = useState('');
   const [jdText, setJdText] = useState('');
@@ -184,7 +186,13 @@ const InputPanel: React.FC<InputPanelProps> = ({ onAnalyze, isAnalyzing, analysi
         </div>
       )}
 
-      <div className="mt-5 flex justify-end">
+      <div className="mt-5 flex justify-end gap-3">
+        <button
+          onClick={() => router.back()}
+          className="px-7 py-2.5 rounded-xl font-semibold text-white transition-all shadow-lg shadow-cyan-500/20 hover:shadow-cyan-500/30 bg-gradient-to-r from-cyan-500 to-indigo-500 hover:from-cyan-400 hover:to-indigo-400 active:scale-95"
+        >
+          Back
+        </button>
         <button
           onClick={handleSubmit}
           disabled={isAnalyzing}

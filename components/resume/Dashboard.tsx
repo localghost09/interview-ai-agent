@@ -121,11 +121,12 @@ const Dashboard: React.FC<DashboardProps> = ({ data, onReset }) => {
         </motion.div>
       </div>
 
-      <div className="grid lg:grid-cols-2 gap-4">
+      <div className="grid lg:grid-cols-2 gap-4 items-stretch">
         <motion.div
           initial={{ y: 20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ delay: 0.4 }}
+          className="h-full flex"
         >
           <KeywordPanel data={data.keyword_analysis} />
         </motion.div>
@@ -134,6 +135,7 @@ const Dashboard: React.FC<DashboardProps> = ({ data, onReset }) => {
           initial={{ y: 20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ delay: 0.5 }}
+          className="h-full flex"
         >
           <ImpactPanel data={data.impact_analysis} />
         </motion.div>

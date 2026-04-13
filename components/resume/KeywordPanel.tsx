@@ -41,7 +41,7 @@ const KeywordPanel: React.FC<KeywordPanelProps> = ({ data }) => {
         : 'Coverage is low. Prioritize role-critical terms in headline, skills, and top project bullets.';
 
   return (
-    <div className="rounded-2xl border border-primary-200/25 dark-gradient p-6 shadow-sm">
+    <div className="h-full rounded-2xl border border-primary-200/25 dark-gradient p-6 shadow-sm">
       <div className="flex items-center justify-between mb-6">
         <h3 className="text-lg font-bold text-primary-200">Keyword Intelligence</h3>
         <span className="text-sm px-3 py-1 bg-primary-200/10 text-primary-200 rounded-full font-medium border border-primary-200/30">

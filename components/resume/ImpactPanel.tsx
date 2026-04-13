@@ -9,7 +9,7 @@ interface ImpactPanelProps {
 
 const ImpactPanel: React.FC<ImpactPanelProps> = ({ data }) => {
   return (
-    <div className="rounded-2xl border border-primary-200/25 dark-gradient p-6 shadow-sm">
+    <div className="h-full rounded-2xl border border-primary-200/25 dark-gradient p-6 shadow-sm">
       <div className="flex items-center gap-3 mb-6">
         <div className="p-2 bg-primary-200/15 rounded-lg text-primary-200 border border-primary-200/25">
            <Zap size={20} />

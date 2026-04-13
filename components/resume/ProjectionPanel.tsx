@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, LabelList } from 'recharts';
 import { TrendingUp } from 'lucide-react';
 
 interface ProjectionPanelProps {
@@ -43,6 +43,13 @@ const ProjectionPanel: React.FC<ProjectionPanelProps> = ({ currentScore, project
                {data.map((entry, index) => (
                   <Cell key={`cell-${index}`} fill={index === 0 ? '#6870a6' : '#cac5fe'} />
                ))}
+               <LabelList
+                 dataKey="score"
+                 position="top"
+                 fill="#d6e0ff"
+                 fontSize={12}
+                 formatter={(value: number) => `${value}`}
+               />
              </Bar>
            </BarChart>
          </ResponsiveContainer>

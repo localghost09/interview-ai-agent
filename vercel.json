@@ -4,6 +4,9 @@
     "framework": "nextjs"
   },
   "functions": {
+    "app/api/speech/analyze/route.ts": {
+      "maxDuration": 60
+    },
     "app/api/**/*.ts": {
       "maxDuration": 30
     }

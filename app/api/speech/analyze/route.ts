@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { AssemblyAI } from 'assemblyai';
 import { generateCoachingFeedback } from '@/lib/speech/coachingFeedback';
 
+export const maxDuration = 60;
+
 const MAX_FILE_SIZE = 25 * 1024 * 1024; // 25 MB
 
 // ---------------------------------------------------------------------------

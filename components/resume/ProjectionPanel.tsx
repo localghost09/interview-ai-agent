@@ -48,7 +48,7 @@ const ProjectionPanel: React.FC<ProjectionPanelProps> = ({ currentScore, project
                  position="top"
                  fill="#d6e0ff"
                  fontSize={12}
-                 formatter={(value: number) => `${value}`}
+                 formatter={(value) => (value === undefined || value === null ? '' : `${value}`)}
                />
              </Bar>
            </BarChart>

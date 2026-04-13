@@ -20,10 +20,16 @@ export async function POST(request: NextRequest) {
     }
 
     // 2. Initialize Gemini
-    const apiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_GEMINI_API_KEY;
+    const apiKey =
+      process.env.GEMINI_API_KEY ||
+      process.env.GOOGLE_GEMINI_API_KEY;
+
     if (!apiKey) {
       return NextResponse.json(
-        { error: 'API key not configured. Set GEMINI_API_KEY in environment variables.' },
+        {
+          error:
+            'API key not configured. Set GEMINI_API_KEY in environment variables.',
+        },
         { status: 500 }
       );
     }
@@ -82,20 +88,50 @@ export async function POST(request: NextRequest) {
       }
     `;
 
-    // 4. Call Model
-    const response = await ai.models.generateContent({
-      model: 'gemini-3-flash-preview',
-      contents: prompt,
-      config: {
-        systemInstruction: systemInstruction,
-        responseMimeType: 'application/json',
-        temperature: 0.3,
-      },
-    });
+    // 4. Call Model (with fallback)
+    let response;
+
+    const GEMINI_MODEL_CANDIDATES = [
+      process.env.GEMINI_MODEL,
+      'gemini-3-flash-preview',
+      'gemini-2.5-flash-preview',
+      'gemini-2.5-flash-lite',
+      'gemini-2.0-flash',
+      'gemini-1.5-flash',
+    ];
+
+    const models = GEMINI_MODEL_CANDIDATES.filter(
+      (model): model is string => Boolean(model)
+    );
+
+    for (const model of models) {
+      try {
+        response = await ai.models.generateContent({
+          model,
+          contents: prompt,
+          config: {
+            systemInstruction: systemInstruction,
+            responseMimeType: 'application/json',
+            temperature: 0.3,
+          },
+        });
+
+        if (response?.text) break; // success
+      } catch (err: any) {
+        console.warn(`Model ${model} failed:`, err?.status || err?.message);
+
+        // fallback only on overload
+        if (err?.status !== 503) {
+          throw err;
+        }
+      }
+    }
+
+    if (!response || !response.text) {
+      throw new Error('All AI models failed to respond');
+    }
 
     const text = response.text;
-    if (!text) throw new Error('No response from AI');
-
     const data = JSON.parse(text);
 
     // 5. Compute Weighted Score
@@ -107,13 +143,26 @@ export async function POST(request: NextRequest) {
     const fc = data.format_compliance || 0;
 
     data.final_score = Math.round(
-      k * 0.3 + s * 0.25 + i * 0.15 + sa * 0.1 + ea * 0.1 + fc * 0.1
+      k * 0.3 +
+        s * 0.25 +
+        i * 0.15 +
+        sa * 0.1 +
+        ea * 0.1 +
+        fc * 0.1
     );
 
     return NextResponse.json(data);
   } catch (error: unknown) {
     console.error(error);
-    const message = error instanceof Error ? error.message : 'Internal server error';
-    return NextResponse.json({ error: message }, { status: 500 });
+
+    const message =
+      error instanceof Error
+        ? error.message
+        : 'Internal server error';
+
+    return NextResponse.json(
+      { error: message },
+      { status: 500 }
+    );
   }
 }
